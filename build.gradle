@@ -1,0 +1,99 @@
+buildscript {
+    ext.javaee_version = "7.0"
+    ext.kotlin_version = '1.3.11'
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "http://repo.spring.io/plugins-release/"
+        }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath group: 'org.hibernate.build.gradle', name: 'gradle-maven-publish-auth', version: '2.0.1'
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.16"
+    }
+}
+
+group 'me.jiangcai.common'
+version '1.0-SNAPSHOT'
+
+
+subprojects {
+
+    apply plugin: 'kotlin'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'maven-publish-auth'
+    apply plugin: 'org.jetbrains.dokka'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    }
+
+    compileKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+                artifact sourceJar
+                artifact packageJavadoc
+            }
+        }
+        repositories {
+            maven {
+                name = "mingshz-nexus"
+                def releasesRepoUrl = "http://repo.mingshz.com/content/repositories/releases/"
+                def snapshotsRepoUrl = "http://repo.mingshz.com/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            }
+        }
+    }
+
+//    https://github.com/Kotlin/dokka
+    dokka {
+        jdkVersion = 8
+        // Use to include or exclude non public members.
+        includeNonPublic = false
+
+        // Do not output deprecated members. Applies globally, can be overridden by packageOptions
+        skipDeprecated = false
+
+        // Emit warnings about not documented members. Applies globally, also can be overridden by packageOptions
+        reportUndocumented = true
+    }
+
+//    javadoc {
+//        source = sourceSets.main.allJava
+//        classpath = configurations.compileClasspath
+//
+//        options
+//                {
+//                    setMemberLevel JavadocMemberLevel.PUBLIC
+//                    setAuthor true
+//
+//                    links "https://docs.oracle.com/javase/8/docs/api/"
+//                }
+//    }
+
+    task sourceJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task packageJavadoc(type: Jar) {
+        from dokka
+        classifier = 'javadoc'
+    }
+
+}

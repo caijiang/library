@@ -1,0 +1,13 @@
+group 'me.jiangcai.common'
+version '1.0.0-SNAPSHOT'
+
+dependencies {
+    compileOnly "javax:javaee-api:$javaee_version"
+    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+    compile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
+//    testRuntime group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
+    compile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+    runtime "javax:javaee-api:$javaee_version"
+
+}

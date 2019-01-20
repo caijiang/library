@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData">
+    <serverData>
+      <paths name="LMJ">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="ali1.mytaocai.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="ali1.wsapp.im">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="ali1.xiaopao18.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="alicentos104">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="alisz72">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="alisz73">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="alisz94">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="fortune_opt1">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="fortune_t1">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="huotuo248">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="kaixinmall888">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="kuanye">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="sc_ali1.mingshz.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="sh1.mingshz">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="xp_deve">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="xp_im">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="xp_web">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="美咖">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="艺福堂">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/jpa" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
