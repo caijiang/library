@@ -13,7 +13,7 @@ dependencies {
     testCompile group: 'org.springframework', name: 'spring-orm', version: '4.3.8.RELEASE'
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
     testRuntime group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
-    testCompile group: 'org.assertj', name: 'assertj-core-java8', version: '1.0.0m1'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
     testCompile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
 
 }

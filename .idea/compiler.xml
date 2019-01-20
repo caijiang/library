@@ -10,6 +10,8 @@
       <module name="resource_test" target="1.8" />
       <module name="test_main" target="1.8" />
       <module name="test_test" target="1.8" />
+      <module name="upgrade_main" target="1.8" />
+      <module name="upgrade_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

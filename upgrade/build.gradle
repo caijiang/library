@@ -1,0 +1,15 @@
+group 'me.jiangcai.common'
+version '1.0.0-SNAPSHOT'
+
+dependencies {
+//    compileOnly "javax:javaee-api:$javaee_version"
+
+    compile group: 'org.springframework', name: 'spring-context', version: '4.3.8.RELEASE'
+    compile group: 'org.springframework', name: 'spring-tx', version: '4.3.8.RELEASE'
+
+//    testCompile project(":test")
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
+
+
+}

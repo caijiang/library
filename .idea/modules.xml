@@ -12,6 +12,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test.iml" filepath="$PROJECT_DIR$/.idea/modules/test.iml" group="test" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test_main.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test_main.iml" group="test" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test_test.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test_test.iml" group="test" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/upgrade.iml" filepath="$PROJECT_DIR$/.idea/modules/upgrade.iml" group="upgrade" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/upgrade/upgrade_main.iml" filepath="$PROJECT_DIR$/.idea/modules/upgrade/upgrade_main.iml" group="upgrade" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/upgrade/upgrade_test.iml" filepath="$PROJECT_DIR$/.idea/modules/upgrade/upgrade_test.iml" group="upgrade" />
     </modules>
   </component>
 </project>

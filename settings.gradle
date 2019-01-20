@@ -2,4 +2,5 @@ rootProject.name = 'library'
 include 'jpa'
 include 'resource'
 include 'test'
+include 'upgrade'
 
