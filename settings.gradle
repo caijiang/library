@@ -4,4 +4,6 @@ include 'resource'
 include 'test'
 include 'upgrade'
 include 'jdbc'
+include 'thymeleaf-view'
+include 'ext'
 

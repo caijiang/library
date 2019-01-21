@@ -2,6 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="ext_main" target="1.8" />
+      <module name="ext_test" target="1.8" />
       <module name="jdbc_main" target="1.8" />
       <module name="jdbc_test" target="1.8" />
       <module name="jpa_main" target="1.8" />
@@ -12,6 +14,8 @@
       <module name="resource_test" target="1.8" />
       <module name="test_main" target="1.8" />
       <module name="test_test" target="1.8" />
+      <module name="thymeleaf-view_main" target="1.8" />
+      <module name="thymeleaf-view_test" target="1.8" />
       <module name="upgrade_main" target="1.8" />
       <module name="upgrade_test" target="1.8" />
     </bytecodeTargetLevel>

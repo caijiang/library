@@ -2,12 +2,19 @@ group 'me.jiangcai.common'
 version '1.0.0-SNAPSHOT'
 
 dependencies {
-    compileOnly "javax:javaee-api:$javaee_version"
+    compile "javax:javaee-api:$javaee_version"
     compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
     compile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
+    compile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
+//    这些非必要的路径需要载入还是只需要provide呢？
+    compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.0.4.RELEASE'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
 //    testRuntime group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
     compile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
-    runtime "javax:javaee-api:$javaee_version"
+    compile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+
+
+    compile project(":ext")
 
 }

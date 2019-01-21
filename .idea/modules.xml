@@ -2,20 +2,26 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ext.iml" filepath="$PROJECT_DIR$/.idea/modules/ext.iml" group="ext" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ext/ext_main.iml" filepath="$PROJECT_DIR$/.idea/modules/ext/ext_main.iml" group="ext" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ext/ext_test.iml" filepath="$PROJECT_DIR$/.idea/modules/ext/ext_test.iml" group="ext" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/jdbc.iml" filepath="$PROJECT_DIR$/.idea/modules/jdbc.iml" group="jdbc" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/jdbc/jdbc_main.iml" filepath="$PROJECT_DIR$/.idea/modules/jdbc/jdbc_main.iml" group="jdbc" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/jdbc/jdbc_test.iml" filepath="$PROJECT_DIR$/.idea/modules/jdbc/jdbc_test.iml" group="jdbc" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/jpa.iml" filepath="$PROJECT_DIR$/.idea/modules/jpa.iml" group="jpa" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/jpa/jpa.iml" filepath="$PROJECT_DIR$/.idea/modules/jpa/jpa.iml" group="jpa" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/jpa/jpa_main.iml" filepath="$PROJECT_DIR$/.idea/modules/jpa/jpa_main.iml" group="jpa" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/jpa/jpa_test.iml" filepath="$PROJECT_DIR$/.idea/modules/jpa/jpa_test.iml" group="jpa" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/library.iml" filepath="$PROJECT_DIR$/.idea/modules/library.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource.iml" filepath="$PROJECT_DIR$/.idea/modules/resource.iml" group="resource" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource.iml" group="resource" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource_main.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource_main.iml" group="resource" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource_test.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource_test.iml" group="resource" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/test.iml" filepath="$PROJECT_DIR$/.idea/modules/test.iml" group="test" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test.iml" group="test" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test_main.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test_main.iml" group="test" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test_test.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test_test.iml" group="test" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/upgrade.iml" filepath="$PROJECT_DIR$/.idea/modules/upgrade.iml" group="upgrade" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/thymeleaf-view.iml" filepath="$PROJECT_DIR$/.idea/modules/thymeleaf-view.iml" group="thymeleaf-view" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/thymeleaf-view/thymeleaf-view_main.iml" filepath="$PROJECT_DIR$/.idea/modules/thymeleaf-view/thymeleaf-view_main.iml" group="thymeleaf-view" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/thymeleaf-view/thymeleaf-view_test.iml" filepath="$PROJECT_DIR$/.idea/modules/thymeleaf-view/thymeleaf-view_test.iml" group="thymeleaf-view" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/upgrade/upgrade.iml" filepath="$PROJECT_DIR$/.idea/modules/upgrade/upgrade.iml" group="upgrade" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/upgrade/upgrade_main.iml" filepath="$PROJECT_DIR$/.idea/modules/upgrade/upgrade_main.iml" group="upgrade" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/upgrade/upgrade_test.iml" filepath="$PROJECT_DIR$/.idea/modules/upgrade/upgrade_test.iml" group="upgrade" />
     </modules>

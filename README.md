@@ -14,3 +14,9 @@
 
 ## upgrade
 提供升级服务的基本规范。
+
+## thymeleaf-view
+给spring4-mvc提供thymeleaf视图解析的支持
+
+## ext
+没有业务归属的通用工具和扩展，是技术领域的扩展。
