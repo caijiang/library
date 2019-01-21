@@ -150,7 +150,7 @@ class VFSResourceService : ResourceService {
         val filePath = fileHome!!.toString() + path
 
         data.use { input ->
-            vfsHelper!!.handle(filePath) { file ->
+            vfsHelper.handle(filePath) { file ->
                 file.content.outputStream.use { out ->
                     try {
                         input.copyTo(out)

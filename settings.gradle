@@ -3,4 +3,5 @@ include 'jpa'
 include 'resource'
 include 'test'
 include 'upgrade'
+include 'jdbc'
 

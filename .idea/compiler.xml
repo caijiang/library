@@ -2,6 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="jdbc_main" target="1.8" />
+      <module name="jdbc_test" target="1.8" />
       <module name="jpa_main" target="1.8" />
       <module name="jpa_test" target="1.8" />
       <module name="library_main" target="1.8" />
