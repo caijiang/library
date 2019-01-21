@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="INFO" debug="true">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p [%c] %m%n"/>
+        </Console>
+        <!--<RollingFile name="ServerDailyRollingFile" filename="logs/projectName/app.log"-->
+        <!--filePattern="logs/projectName/$${date:yyyy-MM}/app-%d{yyyy-MM-dd-HH}-%i.log">-->
+        <!--<PatternLayout>-->
+        <!--<pattern>%d - [%p]%m%n</pattern>-->
+        <!--</PatternLayout>-->
+        <!--<Policies>-->
+        <!--<TimeBasedTriggeringPolicy interval="24" modulate="true"/>-->
+        <!--<SizeBasedTriggeringPolicy size="250 MB"/>-->
+        <!--</Policies>-->
+        <!--</RollingFile>-->
+
+        <File name="TestFile" fileName="target/log.log" append="false" bufferedIO="false">
+            <PatternLayout>
+                <Pattern>%m%n</Pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <!--<Logger name="com.huotu" level="${log4j.com.huotu}"/>-->
+        <!--<Logger name="com.huotu.huobanplus" level="${log4j.com.huotu.huobanplus}"/>-->
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <!--<AppenderRef ref="ServerDailyRollingFile"/>-->
+            <AppenderRef ref="TestFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

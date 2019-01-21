@@ -261,7 +261,7 @@ class CriteriaFunctionBuilderTest {
             it.persist(f1)
 
             val cb = it.criteriaBuilder
-            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("00:00").build()
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
             val cq = cb.createQuery(Long::class.java)
             val root = cq.from(Foo::class.java)
             // 按照date查询 今天，1 昨天 0 明天 0
