@@ -5,6 +5,7 @@ import me.jiangcai.common.ext.nextEmailAddress
 import me.jiangcai.common.ext.nextHttpURL
 import me.jiangcai.common.ext.nextMobileOfChina
 import org.springframework.test.context.ActiveProfiles
+import java.util.*
 import kotlin.random.Random
 
 /**
@@ -34,6 +35,32 @@ abstract class CommonTest {
 
     protected fun randomMobile(): String {
         return random.nextMobileOfChina()
+    }
+
+    /**
+     * @return 尽可能唯一的随机字符串
+     * @since 2.2
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    protected fun randomString(): String {
+        return UUID.randomUUID().toString()
+    }
+
+    /**
+     * @param maxLength 最大长度
+     * @return 尽可能唯一的随机字符串
+     * @since 2.2
+     */
+    protected fun randomString(maxLength: Int): String {
+        val stringBuilder = StringBuilder()
+        while (true) {
+            if (stringBuilder.length > maxLength) {
+                stringBuilder.setLength(maxLength)
+                break
+            }
+            stringBuilder.append(randomString())
+        }
+        return stringBuilder.toString()
     }
 
 }

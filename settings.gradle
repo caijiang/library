@@ -8,4 +8,5 @@ include 'thymeleaf-view'
 include 'ext'
 include 'logging'
 include 'system-string'
+include 'crud-jpa'
 

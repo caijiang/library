@@ -2,6 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="crud-jpa_main" target="1.8" />
+      <module name="crud-jpa_test" target="1.8" />
       <module name="ext_main" target="1.8" />
       <module name="ext_test" target="1.8" />
       <module name="jdbc_main" target="1.8" />

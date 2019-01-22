@@ -1,0 +1,33 @@
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+
+}
+
+group 'me.jiangcai.common'
+version '1.0.0-SNAPSHOT'
+
+lombok { // optional: values below are the defaults
+    version = "1.16.20"
+    sha256 = "c5178b18caaa1a15e17b99ba5e4023d2de2ebc18b58cde0f5a04ca4b31c10e6d"
+}
+
+dependencies {
+    compileOnly "javax:javaee-api:$javaee_version"
+    compile group: 'org.springframework', name: 'spring-tx', version: '4.3.8.RELEASE'
+    compile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
+
+//    apt 'org.projectlombok:lombok:1.18.4'
+    kapt "org.hibernate:hibernate-jpamodelgen:5.2.10.Final"
+//    compileOnly 'org.projectlombok:lombok:1.18.4'
+
+    testApi project(':test')
+    testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
+    testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
+    testRuntime group: 'org.springframework', name: 'spring-aspects', version: '4.3.8.RELEASE'
+    testCompile group: 'com.jayway.jsonpath', name: 'json-path-assert', version: '2.4.0'
+
+}
+
+apply plugin: 'java'
