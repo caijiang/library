@@ -43,11 +43,17 @@ class VFSResourceService : ResourceService {
     @Autowired(required = false)
     constructor(environment: Environment, webApplicationContext: WebApplicationContext)
             : this(
-        environment.getProperty("me.jiangcai.lib.resource.http.uri", null as String?),
-        environment.getProperty("me.jiangcai.lib.resource.home", null as String?),
+        environment.getProperty(
+            "jiangcai.resource.http.uri",
+            environment.getProperty("me.jiangcai.lib.resource.http.uri", null as String?)
+        ),
+        environment.getProperty(
+            "jiangcai.resource.home",
+            environment.getProperty("me.jiangcai.lib.resource.home", null as String?)
+        ),
         environment.getProperty("me.jiangcai.server.port", Int::class.java, 8080),
         webApplicationContext,
-        "me.jiangcai.lib.resource"
+        "jiangcai.resource"
     )
 
     /**
