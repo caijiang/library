@@ -1,0 +1,16 @@
+group 'me.jiangcai.common'
+version '1.0.0-SNAPSHOT'
+
+dependencies {
+    compileOnly "javax:javaee-api:$javaee_version"
+    api project(":thymeleaf-view")
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.0.4.RELEASE'
+
+    testApi project(":test")
+    testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
+    testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
+    testRuntime group: 'org.springframework', name: 'spring-aspects', version: '4.3.8.RELEASE'
+    testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+
+}

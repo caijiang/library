@@ -24,7 +24,7 @@ open class DataSourceConfig {
 
         val dataSource = DriverManagerDataSource()
         dataSource.setDriverClassName("org.h2.Driver")
-        dataSource.url = "jdbc:h2:./target/db"
+        dataSource.url = "jdbc:h2:./build/db"
         return dataSource
     }
 

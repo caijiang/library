@@ -18,6 +18,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource.iml" group="resource" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource_main.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource_main.iml" group="resource" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource_test.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource_test.iml" group="resource" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/system-string.iml" filepath="$PROJECT_DIR$/.idea/modules/system-string.iml" group="system-string" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/system-string/system-string_main.iml" filepath="$PROJECT_DIR$/.idea/modules/system-string/system-string_main.iml" group="system-string" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/system-string/system-string_test.iml" filepath="$PROJECT_DIR$/.idea/modules/system-string/system-string_test.iml" group="system-string" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test.iml" group="test" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test_main.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test_main.iml" group="test" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/test/test_test.iml" filepath="$PROJECT_DIR$/.idea/modules/test/test_test.iml" group="test" />
