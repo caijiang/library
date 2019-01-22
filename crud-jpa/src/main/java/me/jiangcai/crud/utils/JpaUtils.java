@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 /**
  * @author CJ
- * @since 3.0
  */
 public class JpaUtils {
     /**

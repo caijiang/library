@@ -31,7 +31,7 @@ abstract class AbstractResourceServiceTest {
         val path = UUID.randomUUID().toString()
 
         val buf = ByteArrayInputStream(randomData)
-        var resource = resourceService.uploadResource(path, buf)!!
+        var resource = resourceService.uploadResource(path, buf)
 
         buf.reset()
         assertThat(resource.exists())
@@ -39,7 +39,7 @@ abstract class AbstractResourceServiceTest {
         assertThat(resource.inputStream)
             .hasSameContentAs(buf)
 
-        resource = resourceService.getResource(path)!!
+        resource = resourceService.getResource(path)
 
         System.out.println(resource.httpUrl())
 
@@ -57,11 +57,11 @@ abstract class AbstractResourceServiceTest {
         resourceService.uploadResource(path1, buf)
         val path2 = UUID.randomUUID().toString()
         resourceService.moveResource(path2, path1)
-        assertThat(resourceService.getResource(path1)!!.exists())
+        assertThat(resourceService.getResource(path1).exists())
             .isFalse()
-        assertThat(resourceService.getResource(path2)!!.exists())
+        assertThat(resourceService.getResource(path2).exists())
             .isTrue()
-        assertThat(resourceService.getResource(path2)!!.inputStream)
+        assertThat(resourceService.getResource(path2).inputStream)
             .hasSameContentAs(buf)
         resourceService.deleteResource(path2)
 

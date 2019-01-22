@@ -19,7 +19,6 @@ import java.util.*;
  * order的标准暂不明确
  *
  * @author CJ
- * @since 4.0
  */
 public class AntDesignPaginationDramatizer extends AbstractMediaRowDramatizer implements RowDramatizer {
     @Override

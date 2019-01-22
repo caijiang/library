@@ -14,7 +14,6 @@ open class H2DataSourceConfig {
     /**
      * @param name 名字
      * @return 以文件保存的数据源
-     * @since 3.0
      */
     fun fileDataSource(name: String): DataSource {
         val dataSource = DriverManagerDataSource()
@@ -26,7 +25,6 @@ open class H2DataSourceConfig {
     /**
      * @param name 名字
      * @return 内存形式的数据源
-     * @since 3.0
      */
     fun memDataSource(name: String): DataSource {
         val dataSource = DriverManagerDataSource()

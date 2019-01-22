@@ -39,7 +39,6 @@ abstract class CommonTest {
 
     /**
      * @return 尽可能唯一的随机字符串
-     * @since 2.2
      */
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun randomString(): String {
@@ -49,7 +48,6 @@ abstract class CommonTest {
     /**
      * @param maxLength 最大长度
      * @return 尽可能唯一的随机字符串
-     * @since 2.2
      */
     protected fun randomString(maxLength: Int): String {
         val stringBuilder = StringBuilder()

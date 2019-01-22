@@ -32,7 +32,6 @@ public interface IndefiniteFieldDefinition<T> {
     /**
      * @param entity 实体
      * @return 大大方方地从实体中直接获取
-     * @since 4.0.0
      */
     default Object readValue(T entity) {
         try {

@@ -64,8 +64,8 @@ class VFSResourceService : ResourceService {
      * @param prefix                系统属性的前缀,保留应用中存在多个资源管理系统的可能
      */
     constructor(
-        uri: String,
-        home: String,
+        uri: String?,
+        home: String?,
         port: Int,
         webApplicationContext: WebApplicationContext?,
         prefix: String
@@ -98,8 +98,8 @@ class VFSResourceService : ResourceService {
             )
 
         } else {
-            newHome = home
-            newUri = uri
+            newHome = home!!
+            newUri = uri!!
         }
 
         if (!newHome.endsWith("/"))
@@ -142,7 +142,7 @@ class VFSResourceService : ResourceService {
     }
 
     @Throws(IOException::class)
-    override fun uploadResource(path: String, data: InputStream): Resource? {
+    override fun uploadResource(path: String, data: InputStream): Resource {
         if (path.startsWith("/"))
             throw IllegalArgumentException("bad resource path:$path")
         // 检查是否是本地文件系统,如果是的话就使用本地文件系统技术
@@ -172,7 +172,7 @@ class VFSResourceService : ResourceService {
     }
 
     @Throws(IOException::class)
-    override fun moveResource(path: String, fromPath: String): Resource? {
+    override fun moveResource(path: String, fromPath: String): Resource {
         if (path.startsWith("/"))
             throw IllegalArgumentException("bad resource path:$path")
         // 检查是否是本地文件系统,如果是的话就使用本地文件系统技术
@@ -201,7 +201,7 @@ class VFSResourceService : ResourceService {
         return Paths.get(file.toURI())
     }
 
-    override fun getResource(path: String): Resource? {
+    override fun getResource(path: String): Resource {
         if (path.startsWith("/"))
             throw IllegalArgumentException("bad resource path:$path")
 
@@ -216,7 +216,7 @@ class VFSResourceService : ResourceService {
             VFSResource(path, vfsHelper, filePath, URI(url))
         } catch (e: URISyntaxException) {
             log.error("解释资源时", e)
-            null
+            throw IOException("资源格式", e)
         }
 
     }

@@ -48,7 +48,6 @@ import java.util.Map;
  * TODO PATCH /id 请求体为部分资源内容
  *
  * @author CJ
- * @since 1.8
  */
 public abstract class AbstractCrudController<T extends CrudFriendly<ID>, ID extends Serializable, X extends T> {
 

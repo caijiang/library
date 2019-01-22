@@ -142,7 +142,6 @@ abstract class MvcTest : CommonTest() {
      * 如果没有激活Spring安全框架 则该方法无效
      *
      * @return 所用MVC请求都将使用该身份；如果为null则不会执行
-     * @since 3.0
      */
     protected fun autoAuthentication(): Authentication? {
         return null
@@ -153,7 +152,6 @@ abstract class MvcTest : CommonTest() {
      *
      * @param builder builder
      * @return new Builder
-     * @since 2.2
      */
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun buildMockMVC(builder: DefaultMockMvcBuilder): DefaultMockMvcBuilder {
@@ -169,7 +167,6 @@ abstract class MvcTest : CommonTest() {
      * @param session session
      * @return 操作
      * @throws Exception
-     * @since 3.0
      */
     @Throws(Exception::class)
     protected fun redirectTo(perform: ResultActions, session: MockHttpSession?): ResultActions {
@@ -193,7 +190,6 @@ abstract class MvcTest : CommonTest() {
      * @param json
      * @param inputStream
      * @throws IOException
-     * @since 3.0
      */
     @Throws(IOException::class)
     protected fun assertSimilarJsonArray(json: JsonNode, inputStream: InputStream) {
@@ -210,7 +206,6 @@ abstract class MvcTest : CommonTest() {
      *
      * @param actual
      * @param excepted
-     * @since 3.0
      */
     protected fun assertSimilarJsonObject(actual: JsonNode, excepted: JsonNode) {
         assertThat(actual.isObject)
@@ -222,7 +217,6 @@ abstract class MvcTest : CommonTest() {
     /**
      * @param resource 参考资源
      * @return 应该是一个JSON Array资源
-     * @since 3.0
      */
     protected fun similarJsonArrayAs(resource: String): ResultMatcher {
         return ResultMatcher { result ->
@@ -239,7 +233,6 @@ abstract class MvcTest : CommonTest() {
     /**
      * @param resource 参考资源
      * @return 跟resource数据相对应的JSON Object
-     * @since 3.0
      */
     protected fun similarJsonObjectAs(resource: String): ResultMatcher {
         return ResultMatcher { result ->
@@ -255,7 +248,6 @@ abstract class MvcTest : CommonTest() {
     /**
      * @param resource Spring资源path
      * @return 结果跟资源的json格式相近
-     * @since 3.0
      */
     protected fun similarBootstrapDataTable(resource: String): ResultMatcher {
         return ResultMatcher { result ->
@@ -283,7 +275,6 @@ abstract class MvcTest : CommonTest() {
     /**
      * @param resource Spring资源path
      * @return 结果跟资源的json格式相近
-     * @since 3.0
      */
     protected fun similarJQueryDataTable(resource: String): ResultMatcher {
         return ResultMatcher { result ->
@@ -319,7 +310,7 @@ abstract class MvcTest : CommonTest() {
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
      */
-    protected operator fun get(urlTemplate: String, vararg urlVariables: Any): MockHttpServletRequestBuilder {
+    protected operator fun get(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.get(urlTemplate, *urlVariables)
     }
 
@@ -327,7 +318,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockHttpServletRequestBuilder] for a GET request.
      *
      * @param uri the URL
-     * @since 4.0.3
      */
     protected operator fun get(uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.get(uri)
@@ -339,7 +329,7 @@ abstract class MvcTest : CommonTest() {
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
      */
-    protected fun post(urlTemplate: String, vararg urlVariables: Any): MockHttpServletRequestBuilder {
+    protected fun post(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.post(urlTemplate, *urlVariables)
     }
 
@@ -347,7 +337,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockHttpServletRequestBuilder] for a POST request.
      *
      * @param uri the URL
-     * @since 4.0.3
      */
     protected fun post(uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.post(uri)
@@ -359,7 +348,7 @@ abstract class MvcTest : CommonTest() {
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
      */
-    protected fun put(urlTemplate: String, vararg urlVariables: Any): MockHttpServletRequestBuilder {
+    protected fun put(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.put(urlTemplate, *urlVariables)
     }
 
@@ -367,7 +356,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockHttpServletRequestBuilder] for a PUT request.
      *
      * @param uri the URL
-     * @since 4.0.3
      */
     protected fun put(uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.put(uri)
@@ -379,7 +367,7 @@ abstract class MvcTest : CommonTest() {
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
      */
-    protected fun patch(urlTemplate: String, vararg urlVariables: Any): MockHttpServletRequestBuilder {
+    protected fun patch(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.patch(urlTemplate, *urlVariables)
     }
 
@@ -387,7 +375,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockHttpServletRequestBuilder] for a PATCH request.
      *
      * @param uri the URL
-     * @since 4.0.3
      */
     protected fun patch(uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.patch(uri)
@@ -399,7 +386,7 @@ abstract class MvcTest : CommonTest() {
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
      */
-    protected fun delete(urlTemplate: String, vararg urlVariables: Any): MockHttpServletRequestBuilder {
+    protected fun delete(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.delete(urlTemplate, *urlVariables)
     }
 
@@ -407,7 +394,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockHttpServletRequestBuilder] for a DELETE request.
      *
      * @param uri the URL
-     * @since 4.0.3
      */
     protected fun delete(uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.delete(uri)
@@ -419,7 +405,7 @@ abstract class MvcTest : CommonTest() {
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
      */
-    protected fun options(urlTemplate: String, vararg urlVariables: Any): MockHttpServletRequestBuilder {
+    protected fun options(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.options(urlTemplate, *urlVariables)
     }
 
@@ -427,7 +413,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockHttpServletRequestBuilder] for an OPTIONS request.
      *
      * @param uri the URL
-     * @since 4.0.3
      */
     protected fun options(uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.options(uri)
@@ -438,9 +423,8 @@ abstract class MvcTest : CommonTest() {
      *
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
-     * @since 4.1
      */
-    protected fun head(urlTemplate: String, vararg urlVariables: Any): MockHttpServletRequestBuilder {
+    protected fun head(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.head(urlTemplate, *urlVariables)
     }
 
@@ -448,7 +432,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockHttpServletRequestBuilder] for a HEAD request.
      *
      * @param uri the URL
-     * @since 4.1
      */
     protected fun head(uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.head(uri)
@@ -464,7 +447,7 @@ abstract class MvcTest : CommonTest() {
     protected fun request(
         httpMethod: HttpMethod,
         urlTemplate: String,
-        vararg urlVariables: Any
+        vararg urlVariables: Any?
     ): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.request(httpMethod, urlTemplate, *urlVariables)
     }
@@ -474,7 +457,6 @@ abstract class MvcTest : CommonTest() {
      *
      * @param httpMethod the HTTP method (GET, POST, etc)
      * @param uri        the URL
-     * @since 4.0.3
      */
     protected fun request(httpMethod: HttpMethod, uri: URI): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.request(httpMethod, uri)
@@ -486,7 +468,7 @@ abstract class MvcTest : CommonTest() {
      * @param urlTemplate  a URL template; the resulting URL will be encoded
      * @param urlVariables zero or more URL variables
      */
-    protected fun fileUpload(urlTemplate: String, vararg urlVariables: Any): MockMultipartHttpServletRequestBuilder {
+    protected fun fileUpload(urlTemplate: String, vararg urlVariables: Any?): MockMultipartHttpServletRequestBuilder {
         return MockMvcRequestBuilders.fileUpload(urlTemplate, *urlVariables)
     }
 
@@ -494,7 +476,6 @@ abstract class MvcTest : CommonTest() {
      * Create a [MockMultipartHttpServletRequestBuilder] for a multipart request.
      *
      * @param uri the URL
-     * @since 4.0.3
      */
     protected fun fileUpload(uri: URI): MockMultipartHttpServletRequestBuilder {
         return MockMvcRequestBuilders.fileUpload(uri)

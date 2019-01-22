@@ -19,7 +19,6 @@ interface Resource : org.springframework.core.io.Resource {
 
     /**
      * @return 这个资源在本系统中的path
-     * @since 4.0.0
      */
     fun getResourcePath(): String
 

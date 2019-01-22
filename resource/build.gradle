@@ -11,6 +11,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-vfs2', version: '2.2'
     runtime group: 'commons-net', name: 'commons-net', version: '3.6'
     runtime group: 'com.jcraft', name: 'jsch', version: '0.1.55'
+    runtime group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4'
 
     testCompile project(":test")
 

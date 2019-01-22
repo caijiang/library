@@ -35,7 +35,6 @@ interface JdbcService {
      * @param defaultValue 默认值,可以为null
      * @throws SQLException         执行时发生SQL问题
      * @throws NoSuchFieldException 没有找到相关的字段
-     * @since 1.4
      */
     @Transactional
     @Throws(SQLException::class, NoSuchFieldException::class)
@@ -53,7 +52,6 @@ interface JdbcService {
      * @param defaultValue 默认值,可以为null
      * @throws SQLException         执行时发生SQL问题
      * @throws NoSuchFieldException 没有找到相关的字段
-     * @since 1.4
      */
     @Transactional
     @Throws(SQLException::class, NoSuchFieldException::class)

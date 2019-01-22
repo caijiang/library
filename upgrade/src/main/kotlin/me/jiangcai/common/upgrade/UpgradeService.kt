@@ -20,7 +20,6 @@ interface UpgradeService {
      *
      * @param upgrade 负责提供系统升级业务的升级者
      * @param <T>     维护版本信息的枚举类,最新的值将作为最新版本进行升级
-     * @since 1.4.2
      */
     @Transactional
     fun <T : Enum<*>> systemUpgrade(upgrade: VersionUpgrade<T>)
