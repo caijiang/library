@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+<!--/*@thymesVar id="uri" type="java.lang.String"*/-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>Logging Config Manager</title>
@@ -1428,7 +1429,7 @@
     </style>
 </head>
 
-<body>
+<body th:attr="data-uri=@{''+${uri}+''}" data-uri="/test">
 
 <sub class="center">Live Change Logging</sub>
 
@@ -1449,14 +1450,15 @@
         <td th:text="${entry.key}">the name</td>
         <td th:text="${entry.value}">the value</td>
         <td>
-            <button th:attr="data-url=@{/loggingConfig/{name}/(name=${entry.key})}">Remove</button>
+            <button th:attr="data-url=@{/{name}/(name=${entry.key})}" data-url="/me.jiangcai.common.logging/">Remove
+            </button>
         </td>
     </tr>
     </tbody>
 </table>
 <h2 class="center">Add More...</h2>
 
-<form class="center" action="#" th:action="@{/loggingConfig}" method="post">
+<form class="center" action="#" th:action="@{''+${uri}+''}" method="post">
     <label title="package">
         package:<input name="name" type="text"/>
     </label>
@@ -1478,10 +1480,12 @@
 <script>
     $(function () {
         $('button[data-url]').click(function () {
-            $.ajax($(this).attr('data-url'), {
+            var url = $('body').attr('data-uri') + $(this).attr('data-url');
+            // console.log(url);
+            $.ajax(url, {
                 method: 'delete',
                 complete: function (jqXHR) {
-                    console.log(jqXHR);
+                    // console.log(jqXHR);
                     location.reload();
                 }
             });

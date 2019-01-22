@@ -42,7 +42,7 @@ class SystemStringControllerTest : MvcTest() {
     //    @Transactional
     fun go() {
         systemStringService.getCustomSystemString("test.key", null, true, String::class.java, "hello")
-        val uri = environment.getProperty("ss.uri")
+        val uri = environment.getProperty("jiangcai.ss.uri")
 
         mockMvc.perform(
             get(uri)

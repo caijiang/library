@@ -16,6 +16,7 @@ import java.util.Map;
  *
  * @author CJ
  */
+@SuppressWarnings("ALL")
 public class MultiReadHttpServletRequest implements HttpServletRequest {
 
     private final byte[] buffer;

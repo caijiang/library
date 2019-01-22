@@ -11,6 +11,11 @@ import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 /**
+ * 支持配置:
+ * * jiangcai.ss.uri 配置管理uri, 比如 /ss
+ *
+ * 如果安全机制被加载，那么它将要求[SystemStringConfig.MANAGER_ROLE]权限进行管理
+ *
  * @author CJ
  */
 @Configuration

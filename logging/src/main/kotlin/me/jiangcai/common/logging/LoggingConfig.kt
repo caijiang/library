@@ -33,6 +33,11 @@ import javax.servlet.ServletContext
  *
  * **目前仅支持log4j2**
  *
+ * 同时可以通过给予配置
+ * * jiangcai.logging.uri 设置管理路径, 比如 /loggingConfig
+ *
+ * 如果安全机制被加载，那么它将要求[LoggingConfig.ROLE_MANAGER]权限进行管理
+ *
  * @author CJ
  */
 @Configuration
