@@ -5,14 +5,15 @@ version '1.0.0-SNAPSHOT'
 dependencies {
     compileOnly "javax:javaee-api:$javaee_version"
     compileOnly 'org.eclipse.persistence:eclipselink:2.6.2'
-    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+//    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+    compile group: 'org.springframework', name: 'spring-context', version: '4.3.8.RELEASE'
+    compile group: 'org.springframework', name: 'spring-orm', version: '4.3.8.RELEASE'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
-    testCompile group: 'org.springframework', name: 'spring-context', version: '4.3.8.RELEASE'
-    testCompile group: 'org.springframework', name: 'spring-orm', version: '4.3.8.RELEASE'
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
     testRuntime group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
+    testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
     testCompile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
 
