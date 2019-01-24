@@ -3,7 +3,6 @@ package me.jiangcai.crud.row.bean;
 import me.jiangcai.crud.row.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -11,6 +10,7 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.List;
 
@@ -21,8 +21,7 @@ import java.util.List;
 public class IndefiniteRowDefinitionHandler implements HandlerMethodReturnValueHandler {
     private static final Log log = LogFactory.getLog(IndefiniteRowDefinitionHandler.class);
 
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
 
     @Override

@@ -15,6 +15,7 @@ import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 /**
@@ -24,8 +25,7 @@ import java.util.List;
 public class RowDefinitionHandler implements HandlerMethodReturnValueHandler {
 
     private static final Log log = LogFactory.getLog(RowDefinitionHandler.class);
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
     @Autowired
     private RowService rowService;

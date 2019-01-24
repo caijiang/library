@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
@@ -51,7 +52,7 @@ import java.util.Map;
  */
 public abstract class AbstractCrudController<T extends CrudFriendly<ID>, ID extends Serializable, X extends T> {
 
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;

@@ -7,7 +7,6 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.RowService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import java.util.Collections;
 import java.util.List;
@@ -33,8 +33,7 @@ public class RowServiceImpl implements RowService {
 
     private static final Log log = LogFactory.getLog(RowServiceImpl.class);
 
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
 
     @Override
