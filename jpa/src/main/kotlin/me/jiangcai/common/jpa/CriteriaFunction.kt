@@ -102,6 +102,110 @@ open class CriteriaFunction(
     }
     //</editor-fold>
 
+
+    //<editor-fold desc="日期比较">
+    /**
+     * 日期大于指定日期
+     * 比如筛选日期
+     * 2018.10.1 10:11:22  2018.9.30 ok
+     * 2018.10.1 10:11:22  2018.10.1 acceptThisDate
+     *
+     * @param acceptThisDate 是否接受指定日期？
+     */
+    fun <T : Temporal> dateGreaterThan(
+        arg: Expression<T>,
+        date: LocalDate,
+        acceptThisDate: Boolean = false
+    ): Predicate {
+        // 换算到 LocalDateTime 如果是 acceptThisDate 则是 >= thisDate_00:00:00
+        if (acceptThisDate)
+            return dateGE(arg, date.atStartOfDay())
+        // 换算到 LocalDateTime 如果不是 acceptThisDate 则是 > (thisDate+1)_00:00:00
+        return dateGT(arg, date.plusDays(1).atStartOfDay())
+    }
+
+    /**
+     * 日期小于指定日期
+     * @param acceptThisDate 是否接受指定日期
+     */
+    fun <T : Temporal> dateLessThan(
+        arg: Expression<T>,
+        date: LocalDate,
+        acceptThisDate: Boolean = false
+    ): Predicate {
+        // 换算到 LocalDateTime 如果是 acceptThisDate 则是 < (thisDate+1)_00:00:00
+        if (acceptThisDate)
+            return dateLT(arg, date.plusDays(1).atStartOfDay())
+        // 换算到 LocalDateTime 如果不是 acceptThisDate 则是 < thisDate_00:00:00
+        return dateLT(arg, date.atStartOfDay())
+    }
+
+    fun <T : Temporal> dateLE(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
+        if (arg.javaType == LocalDateTime::class.java) {
+            return builder.lessThanOrEqualTo(
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+            )
+        }
+        if (arg.javaType == LocalDate::class.java) {
+            return builder.lessThanOrEqualTo(
+                timezoneFixLocalDate(arg as Expression<LocalDate>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+            )
+        }
+        throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
+    }
+
+    fun <T : Temporal> dateLT(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
+        if (arg.javaType == LocalDateTime::class.java) {
+            return builder.lessThan(
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+            )
+        }
+        if (arg.javaType == LocalDate::class.java) {
+            return builder.lessThan(
+                timezoneFixLocalDate(arg as Expression<LocalDate>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+            )
+        }
+        throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
+    }
+
+    fun <T : Temporal> dateGT(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
+        if (arg.javaType == LocalDateTime::class.java) {
+            return builder.greaterThan(
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+            )
+        }
+        if (arg.javaType == LocalDate::class.java) {
+            return builder.greaterThan(
+                timezoneFixLocalDate(arg as Expression<LocalDate>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+            )
+        }
+        throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
+    }
+
+    fun <T : Temporal> dateGE(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
+        if (arg.javaType == LocalDateTime::class.java) {
+            return builder.greaterThanOrEqualTo(
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+            )
+        }
+        if (arg.javaType == LocalDate::class.java) {
+            return builder.greaterThanOrEqualTo(
+                timezoneFixLocalDate(arg as Expression<LocalDate>)
+                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+            )
+        }
+        throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
+    }
+    //</editor-fold>
+
+
     //<editor-fold desc="年份和月比较">
     /**
      * @return 同年同月的谓语

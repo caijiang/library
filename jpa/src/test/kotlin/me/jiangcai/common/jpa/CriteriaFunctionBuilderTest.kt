@@ -132,6 +132,19 @@ class CriteriaFunctionBuilderTest {
                 ).singleResult
             )
                 .isEqualTo(1)
+
+            assertThat(
+                it.createQuery(
+                    cq.select(cb.count(root))
+                        .where(
+                            b.durationLE(
+                                root.get<LocalDateTime>("created"), f1.created,
+                                Duration.ofSeconds(1)
+                            )
+                        )
+                ).singleResult
+            )
+                .isEqualTo(1)
         }
     }
 
@@ -302,6 +315,143 @@ class CriteriaFunctionBuilderTest {
             )
                 .isEqualTo(0)
 
+        }
+    }
+
+    @Test
+    fun date() {
+        runInTx {
+            val f1 = Foo()
+            f1.created = LocalDateTime.now()
+            it.persist(f1)
+
+            val cb = it.criteriaBuilder
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+            val cq = cb.createQuery(Long::class.java)
+            val root = cq.from(Foo::class.java)
+            // 按照date查询 今天，1 昨天 0 明天 0
+
+            // 找一个比当时早一秒的时间
+            val before = f1.created.minusSeconds(1)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLE(root.get<LocalDateTime>("created"), before))
+                ).singleResult
+            )
+                .isEqualTo(0)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLT(root.get<LocalDateTime>("created"), before))
+                ).singleResult
+            )
+                .isEqualTo(0)
+
+            // 找一个比当时晚1秒的时间
+            val after = f1.created.plusSeconds(1)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateGE(root.get<LocalDateTime>("created"), after))
+                ).singleResult
+            )
+                .isEqualTo(0)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateGT(root.get<LocalDateTime>("created"), after))
+                ).singleResult
+            )
+                .isEqualTo(0)
+
+            // 已经完成排他测试，现在进行有效测试
+
+            // sum(created > c-1) => 1
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateGE(root.get<LocalDateTime>("created"), before))
+                ).singleResult
+            )
+                .isEqualTo(1)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateGT(root.get<LocalDateTime>("created"), before))
+                ).singleResult
+            )
+                .isEqualTo(1)
+
+            // sum(created < c+1) => 1
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLT(root.get<LocalDateTime>("created"), after))
+                ).singleResult
+            )
+                .isEqualTo(1)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLE(root.get<LocalDateTime>("created"), after))
+                ).singleResult
+            )
+                .isEqualTo(1)
+
+            //
+            val today = f1.created.toLocalDate()
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateGreaterThan(root.get<LocalDateTime>("created"), today))
+                ).singleResult
+            )
+                .isEqualTo(0)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateGreaterThan(root.get<LocalDateTime>("created"), today, true))
+                ).singleResult
+            )
+                .isEqualTo(1)
+
+            //
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLessThan(root.get<LocalDateTime>("created"), today))
+                ).singleResult
+            )
+                .isEqualTo(0)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLessThan(root.get<LocalDateTime>("created"), today, true))
+                ).singleResult
+            )
+                .isEqualTo(1)
         }
     }
 
