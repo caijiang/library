@@ -10,8 +10,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.WeekFields
 import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
+import javax.persistence.criteria.Expression
+import javax.persistence.criteria.Root
 
 /**
  * https://www.baeldung.com/junit-5-migration
@@ -502,6 +505,71 @@ class CriteriaFunctionBuilderTest {
                 .isNull()
         }
 
+    }
+
+    @Test
+    fun query() {
+        runInTx { entityManager ->
+            // 很简单，一直保存重复的保存,大概持续1年吧。
+            val f1 = Foo()
+            f1.created = LocalDateTime.now()
+            entityManager.persist(f1)
+            entityManager.flush()
+
+            // 目标值
+            val target = f1.created.plusMonths(1).plusYears(1)
+            while (true) {
+                if (f1.created > target)
+                    break
+                f1.created = f1.created.plusDays(1)
+                println(f1.created)
+                entityManager.merge(f1)
+
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.year(root.get("created")) }
+                )
+                    .isEqualTo(f1.created.year)
+
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.month(root.get("created")) }
+                )
+                    .isEqualTo(f1.created.monthValue)
+
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.dayOfMonth(root.get("created")) }
+                )
+                    .isEqualTo(f1.created.dayOfMonth)
+                //
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.weekOfYear(root.get("created"), WeekFields.ISO) }
+                )
+                    .isEqualTo(f1.created.get(WeekFields.ISO.weekOfWeekBasedYear()))
+
+                assertThat(
+                    selectPart(entityManager) { cf, root ->
+                        cf.weekOfYear(
+                            root.get("created"),
+                            WeekFields.SUNDAY_START
+                        )
+                    }
+                )
+                    .isEqualTo(f1.created.get(WeekFields.SUNDAY_START.weekOfWeekBasedYear()))
+
+            }
+        }
+    }
+
+    private inline fun <reified T> selectPart(
+        entityManager: EntityManager,
+        result: ((CriteriaFunction, Root<Foo>) -> Expression<T>)
+    ): T {
+        val cb = entityManager.criteriaBuilder
+        val cq = cb.createQuery(T::class.java)
+        val root = cq.from(Foo::class.java)
+
+        val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+
+        return entityManager.createQuery(cq.select(result(b, root))).singleResult
     }
 
 }

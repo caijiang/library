@@ -1,11 +1,9 @@
 package me.jiangcai.common.jpa
 
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.Month
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
+import java.time.temporal.WeekFields
 import java.util.*
 import javax.persistence.criteria.CriteriaBuilder
 import javax.persistence.criteria.Expression
@@ -52,6 +50,81 @@ open class CriteriaFunction(
         if (timezoneDiff == null)
             return input
         return builder.function("ADDTIME", LocalDate::class.java, input, builder.literal(timezoneDiff))
+    }
+
+    //    常见的日期截取
+    /**
+     * @return 年份的表达式
+     */
+    fun <T : Temporal> year(arg: Expression<T>): Expression<Int> {
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function("year", Int::class.java, timezoneFixLocalDateTime(arg as Expression<LocalDateTime>))
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function("year", Int::class.java, timezoneFixLocalDate(arg as Expression<LocalDate>))
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    /**
+     * @return 月份的表达式
+     * @see Month.getValue
+     */
+    fun <T : Temporal> month(arg: Expression<T>): Expression<Int> {
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function(
+                "month",
+                Int::class.java,
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
+            )
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function("month", Int::class.java, timezoneFixLocalDate(arg as Expression<LocalDate>))
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    /**
+     * @return 日的表达式
+     * @see Month.getValue
+     */
+    fun <T : Temporal> dayOfMonth(arg: Expression<T>): Expression<Int> {
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function("day", Int::class.java, timezoneFixLocalDateTime(arg as Expression<LocalDateTime>))
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function("day", Int::class.java, timezoneFixLocalDate(arg as Expression<LocalDate>))
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    /**
+     * @param weekFields 周规格
+     * @return 年第几周的表达式
+     * @see WeekFields.weekOfWeekBasedYear
+     */
+    fun <T : Temporal> weekOfYear(arg: Expression<T>, weekFields: WeekFields = WeekFields.ISO): Expression<Int> {
+        val mode = when (weekFields.firstDayOfWeek) {
+            DayOfWeek.MONDAY -> when {
+                weekFields.minimalDaysInFirstWeek >= 4 -> 3
+                else -> 7
+            }
+            DayOfWeek.SUNDAY -> 6
+//            DayOfWeek.SUNDAY -> when {
+//                weekFields.minimalDaysInFirstWeek >= 4 -> 4
+//                else -> 0
+//            }
+            else -> throw IllegalStateException("周只能从周一或者周日开始")
+        }
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function(
+                "WEEK",
+                Int::class.java,
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>),
+                builder.literal(mode)
+            )
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function(
+                "WEEK",
+                Int::class.java,
+                timezoneFixLocalDate(arg as Expression<LocalDate>),
+                builder.literal(mode)
+            )
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
     }
 
 
