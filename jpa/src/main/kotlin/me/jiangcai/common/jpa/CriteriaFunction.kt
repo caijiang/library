@@ -1,5 +1,6 @@
 package me.jiangcai.common.jpa
 
+import java.math.BigDecimal
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
@@ -52,7 +53,46 @@ open class CriteriaFunction(
         return builder.function("ADDTIME", LocalDate::class.java, input, builder.literal(timezoneDiff))
     }
 
-    //    常见的日期截取
+    // 三角函数 放在一起吧
+
+    //<editor-fold desc="Numeric and math">
+    // abs 提供了
+    /**
+     * @return Return the smallest integer value not less than the argument
+     */
+    fun <T : Number> ceil(input: Expression<T>): Expression<Int> {
+        return builder.function("ceil", Int::class.java, input)
+    }
+
+    /**
+     * @return Return the largest integer value not greater than the argument
+     */
+    fun <T : Number> floor(input: Expression<T>): Expression<Int> {
+        return builder.function("floor", Int::class.java, input)
+    }
+
+    /**
+     * @return Raise to the power of
+     */
+    fun <T : Number> exp(input: Expression<T>): Expression<BigDecimal> {
+        return builder.function("EXP", BigDecimal::class.java, input)
+    }
+
+//    /**
+//     *
+//     * If X is less than or equal to 0, or if B is less than or equal to 1, then NULL is returned.
+//     * @return  the logarithm of X to the base B
+//     */
+//    fun <T:Number> log(b:Expression<T>,x:Expression<T>):Expression<BigDecimal> {
+//
+//    }
+
+    // pow
+    // Return the argument raised to the specified power
+
+    //</editor-fold>
+
+    //<editor-fold desc="常见的日期截取">
     /**
      * @return 年份的表达式
      */
@@ -78,6 +118,18 @@ open class CriteriaFunction(
         if (arg.javaType == LocalDate::class.java)
             return builder.function("month", Int::class.java, timezoneFixLocalDate(arg as Expression<LocalDate>))
         throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    /**
+     * * 1,2,3 为季度1
+     * * 4,5,6 为季度2
+     * * 7,8,9 为季度3
+     * * 10,11,12 为季度4
+     * @return 季度的表达式
+     */
+    fun <T : Temporal> quarter(arg: Expression<T>): Expression<Int> {
+        val m = month(arg)
+        return ceil(builder.quot(m, 3))
     }
 
     /**
@@ -154,6 +206,7 @@ open class CriteriaFunction(
             )
         throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
     }
+    //</editor-fold>
 
 
     //<editor-fold desc="准确的日期比较">

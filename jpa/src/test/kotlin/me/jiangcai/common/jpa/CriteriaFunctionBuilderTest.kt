@@ -3,11 +3,14 @@ package me.jiangcai.common.jpa
 import me.jiangcai.common.jpa.entity.Foo
 import me.jiangcai.common.jpa.entity.Foo_
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.Offset
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -16,6 +19,7 @@ import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
 import javax.persistence.criteria.Expression
 import javax.persistence.criteria.Root
+import kotlin.random.Random
 
 /**
  * https://www.baeldung.com/junit-5-migration
@@ -40,6 +44,37 @@ class CriteriaFunctionBuilderTest {
         } finally {
             entityManager.transaction.rollback()
             entityManager.close()
+        }
+    }
+
+    @Test
+    fun numeric() {
+        runInTx {
+            val f1 = Foo()
+            it.persist(f1)
+            it.flush()
+
+            val random = Random(System.currentTimeMillis())
+            for (i in 1..50) {
+                f1.value = random.nextDouble((-100).toDouble(), (100).toDouble()).toBigDecimal()
+                    .setScale(10, RoundingMode.DOWN)
+                it.merge(f1)
+
+                assertThat(selectPart(it) { cf, root ->
+                    cf.ceil(root.get(Foo_.value))
+                })
+                    .isEqualTo(Math.ceil(f1.value!!.toDouble()).toInt())
+
+                assertThat(selectPart(it) { cf, root ->
+                    cf.floor(root.get(Foo_.value))
+                })
+                    .isEqualTo(Math.floor(f1.value!!.toDouble()).toInt())
+
+                assertThat(selectPart(it) { cf, root ->
+                    cf.exp(root.get(Foo_.value))
+                })
+                    .isCloseTo(Math.exp(f1.value!!.toDouble()).toBigDecimal(), Offset.offset(BigDecimal("0.000001")))
+            }
         }
     }
 
@@ -565,6 +600,11 @@ class CriteriaFunctionBuilderTest {
                     selectPart(entityManager) { cf, root -> cf.month(root.get("created")) }
                 )
                     .isEqualTo(f1.created.monthValue)
+
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.quarter(root.get("created")) }
+                )
+                    .isEqualTo(Math.ceil(f1.created.monthValue.toDouble() / (3).toDouble()).toInt())
 
                 assertThat(
                     selectPart(entityManager) { cf, root -> cf.dayOfMonth(root.get("created")) }
