@@ -6,7 +6,5 @@ import javax.persistence.criteria.CriteriaBuilder
 /**
  * @author CJ
  */
-class MysqlCriteriaFunction(builder: CriteriaBuilder, timezoneDiff: String?) :
-    CriteriaFunction(builder, timezoneDiff) {
-
-}
+class MysqlCriteriaFunction(builder: CriteriaBuilder, timezoneDiff: String) :
+    CriteriaFunction(builder, timezoneDiff)

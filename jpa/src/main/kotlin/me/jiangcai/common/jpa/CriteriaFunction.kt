@@ -15,7 +15,7 @@ import javax.persistence.criteria.Predicate
 @Suppress("UNCHECKED_CAST")
 open class CriteriaFunction(
     private val builder: CriteriaBuilder,
-    private val timezoneDiff: String? = null
+    private val timezoneDiff: String = "00:00"
 ) {
 
     /**
@@ -39,16 +39,16 @@ open class CriteriaFunction(
     private fun timezoneFixLocalDateTime(
         input: Expression<LocalDateTime>
     ): Expression<LocalDateTime> {
-        if (timezoneDiff == null)
-            return input
+//        if (timezoneDiff == null)
+//            return input
         return builder.function("ADDTIME", LocalDateTime::class.java, input, builder.literal(timezoneDiff))
     }
 
     private fun timezoneFixLocalDate(
         input: Expression<LocalDate>
     ): Expression<LocalDate> {
-        if (timezoneDiff == null)
-            return input
+//        if (timezoneDiff == null)
+//            return input
         return builder.function("ADDTIME", LocalDate::class.java, input, builder.literal(timezoneDiff))
     }
 

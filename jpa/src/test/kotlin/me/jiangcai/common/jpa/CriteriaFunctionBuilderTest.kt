@@ -1,6 +1,7 @@
 package me.jiangcai.common.jpa
 
 import me.jiangcai.common.jpa.entity.Foo
+import me.jiangcai.common.jpa.entity.Foo_
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -318,6 +319,36 @@ class CriteriaFunctionBuilderTest {
             )
                 .isEqualTo(0)
 
+        }
+    }
+
+    @Test
+    fun onlyDateFun() {
+        runInTx {
+            val cb = it.criteriaBuilder
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+            val cq = cb.createQuery(Long::class.java)
+            val root = cq.from(Foo::class.java)
+
+            val today = LocalDate.now()
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLessThan(root.get<LocalDateTime>("created"), today, true))
+                ).singleResult
+            )
+                .isEqualTo(0)
+
+            assertThat(
+                it.createQuery(
+                    cq
+                        .select(cb.count(root))
+                        .where(b.dateLessThan(root.get(Foo_.created), today, true))
+                ).singleResult
+            )
+                .isEqualTo(0)
         }
     }
 

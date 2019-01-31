@@ -10,12 +10,12 @@ import javax.persistence.criteria.CriteriaBuilder
 class CriteriaFunctionBuilder(
     private val builder: CriteriaBuilder,
     private var platform: String? = null,
-    private var timezoneDiff: String? = null
+    private var timezoneDiff: String = "00:00"
 ) {
 
     /**
      * 如果jvm和数据库并非同一个时区，那么用于JPA的java8time Local时间类型时区会存在差异，这里允许做出调整
-     * @param timezoneDiff 比如 8:00
+     * @param timezoneDiff 比如 08:00
      */
     fun forTimezoneDiff(timezoneDiff: String): CriteriaFunctionBuilder {
         this.timezoneDiff = timezoneDiff
