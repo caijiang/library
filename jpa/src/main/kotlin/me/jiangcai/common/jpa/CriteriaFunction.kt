@@ -98,18 +98,7 @@ open class CriteriaFunction(
      * @see WeekFields.weekOfWeekBasedYear
      */
     fun <T : Temporal> weekOfYear(arg: Expression<T>, weekFields: WeekFields = WeekFields.ISO): Expression<Int> {
-        val mode = when (weekFields.firstDayOfWeek) {
-            DayOfWeek.MONDAY -> when {
-                weekFields.minimalDaysInFirstWeek >= 4 -> 3
-                else -> 7
-            }
-            DayOfWeek.SUNDAY -> 6
-//            DayOfWeek.SUNDAY -> when {
-//                weekFields.minimalDaysInFirstWeek >= 4 -> 4
-//                else -> 0
-//            }
-            else -> throw IllegalStateException("周只能从周一或者周日开始")
-        }
+        val mode = toWeekMode(weekFields)
         if (arg.javaType == LocalDateTime::class.java)
             return builder.function(
                 "WEEK",
@@ -120,6 +109,45 @@ open class CriteriaFunction(
         if (arg.javaType == LocalDate::class.java)
             return builder.function(
                 "WEEK",
+                Int::class.java,
+                timezoneFixLocalDate(arg as Expression<LocalDate>),
+                builder.literal(mode)
+            )
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    private fun toWeekMode(weekFields: WeekFields): Int {
+        return when (weekFields.firstDayOfWeek) {
+            DayOfWeek.MONDAY -> when {
+                weekFields.minimalDaysInFirstWeek >= 4 -> 3
+                else -> 7
+            }
+            DayOfWeek.SUNDAY -> 6
+            //            DayOfWeek.SUNDAY -> when {
+            //                weekFields.minimalDaysInFirstWeek >= 4 -> 4
+            //                else -> 0
+            //            }
+            else -> throw IllegalStateException("周只能从周一或者周日开始")
+        }
+    }
+
+    /**
+     * @param weekFields 周规格
+     * @return 年以及周的联合表达式; 等于 年*100+周
+     * @see WeekFields.weekOfWeekBasedYear
+     */
+    fun <T : Temporal> yearWeek(arg: Expression<T>, weekFields: WeekFields = WeekFields.ISO): Expression<Int> {
+        val mode = toWeekMode(weekFields)
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function(
+                "YEARWEEK",
+                Int::class.java,
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>),
+                builder.literal(mode)
+            )
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function(
+                "YEARWEEK",
                 Int::class.java,
                 timezoneFixLocalDate(arg as Expression<LocalDate>),
                 builder.literal(mode)

@@ -586,6 +586,22 @@ class CriteriaFunctionBuilderTest {
                 )
                     .isEqualTo(f1.created.get(WeekFields.SUNDAY_START.weekOfWeekBasedYear()))
 
+                //
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.yearWeek(root.get("created"), WeekFields.ISO) }
+                )
+                    .isEqualTo(f1.created.yearWeek(WeekFields.ISO))
+
+                assertThat(
+                    selectPart(entityManager) { cf, root ->
+                        cf.yearWeek(
+                            root.get("created"),
+                            WeekFields.SUNDAY_START
+                        )
+                    }
+                )
+                    .isEqualTo(f1.created.yearWeek(WeekFields.SUNDAY_START))
+
             }
         }
     }
