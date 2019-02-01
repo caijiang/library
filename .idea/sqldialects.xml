@@ -2,5 +2,6 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/jdbc/src/test/kotlin/me/jiangcai/common/jdbc/JdbcServiceTest.kt" dialect="H2" />
+    <file url="file://$PROJECT_DIR$/jpa/src/test/kotlin/me/jiangcai/common/jpa/CriteriaFunctionBuilderTest.kt" dialect="MySQL" />
   </component>
 </project>

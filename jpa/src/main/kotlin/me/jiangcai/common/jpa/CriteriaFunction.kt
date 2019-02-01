@@ -94,6 +94,51 @@ open class CriteriaFunction(
 
     //<editor-fold desc="常见的日期截取">
     /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
+     * @return 24小时制的小时的表达式
+     */
+    fun <T : Temporal> hour(arg: Expression<T>): Expression<Int> {
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function("hour", Int::class.java, timezoneFixLocalDateTime(arg as Expression<LocalDateTime>))
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function("hour", Int::class.java, timezoneFixLocalDate(arg as Expression<LocalDate>))
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
+     * @return 分钟的表达式
+     */
+    fun <T : Temporal> minute(arg: Expression<T>): Expression<Int> {
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function(
+                "MINUTE",
+                Int::class.java,
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
+            )
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function("MINUTE", Int::class.java, timezoneFixLocalDate(arg as Expression<LocalDate>))
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
+     * @return 秒的表达式
+     */
+    fun <T : Temporal> second(arg: Expression<T>): Expression<Int> {
+        if (arg.javaType == LocalDateTime::class.java)
+            return builder.function(
+                "SECOND",
+                Int::class.java,
+                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
+            )
+        if (arg.javaType == LocalDate::class.java)
+            return builder.function("SECOND", Int::class.java, timezoneFixLocalDate(arg as Expression<LocalDate>))
+        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
+    }
+
+    /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @return 年份的表达式
      */
     fun <T : Temporal> year(arg: Expression<T>): Expression<Int> {
@@ -105,6 +150,7 @@ open class CriteriaFunction(
     }
 
     /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @return 月份的表达式
      * @see Month.getValue
      */
@@ -133,6 +179,7 @@ open class CriteriaFunction(
     }
 
     /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @return 日的表达式
      * @see Month.getValue
      */
@@ -145,6 +192,7 @@ open class CriteriaFunction(
     }
 
     /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @param weekFields 周规格
      * @return 年第几周的表达式
      * @see WeekFields.weekOfWeekBasedYear
@@ -184,6 +232,7 @@ open class CriteriaFunction(
     }
 
     /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @param weekFields 周规格
      * @return 年以及周的联合表达式; 等于 年*100+周
      * @see WeekFields.weekOfWeekBasedYear
@@ -212,6 +261,7 @@ open class CriteriaFunction(
     //<editor-fold desc="准确的日期比较">
     /**
      * 注意localDate是本地时间
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @param localDate 如果某参数为传入值则推荐使用字符串，可以避免因为数据库的异常而导致类型异常；通常各个数据库对于字符串都是比较友好的
      * @return Predicate for same date
      */
@@ -294,6 +344,9 @@ open class CriteriaFunction(
         return dateLT(arg, date.atStartOfDay())
     }
 
+    /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
+     */
     fun <T : Temporal> dateLE(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.lessThanOrEqualTo(
@@ -310,6 +363,9 @@ open class CriteriaFunction(
         throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
     }
 
+    /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
+     */
     fun <T : Temporal> dateLT(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.lessThan(
@@ -326,6 +382,9 @@ open class CriteriaFunction(
         throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
     }
 
+    /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
+     */
     fun <T : Temporal> dateGT(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.greaterThan(
@@ -342,6 +401,9 @@ open class CriteriaFunction(
         throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
     }
 
+    /**
+     * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
+     */
     fun <T : Temporal> dateGE(arg: Expression<T>, dateTime: LocalDateTime): Predicate {
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.greaterThanOrEqualTo(
@@ -378,7 +440,7 @@ open class CriteriaFunction(
     }
 
     /**
-     * @param expression 数据库中的一个日期表达式
+     * @param expression 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @return 同年同月的谓语
      */
     fun <T : Temporal> yearAndMonthEqual(expression: Expression<T>, localDate: LocalDate): Predicate {
@@ -461,7 +523,7 @@ open class CriteriaFunction(
     }
 
     /**
-     * @param from 开始时刻
+     * @param from 开始时刻，本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * @param to 截止时刻
      * @param duration 要求的时间段
      * @return 时间段大于要求的谓语
@@ -475,6 +537,7 @@ open class CriteriaFunction(
     }
 
     /**
+     * @param from 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * 大于等于版本的[durationGT]
      */
     fun durationGE(from: Expression<LocalDateTime>, to: LocalDateTime, duration: Duration): Predicate {
@@ -486,6 +549,7 @@ open class CriteriaFunction(
     }
 
     /**
+     * @param from 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * 小于版本的[durationGT]
      */
     fun durationLT(from: Expression<LocalDateTime>, to: LocalDateTime, duration: Duration): Predicate {
@@ -497,6 +561,7 @@ open class CriteriaFunction(
     }
 
     /**
+     * @param from 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
      * 小于等于版本的[durationGT]
      */
     fun durationLE(from: Expression<LocalDateTime>, to: LocalDateTime, duration: Duration): Predicate {

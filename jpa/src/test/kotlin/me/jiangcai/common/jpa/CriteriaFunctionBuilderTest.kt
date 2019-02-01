@@ -4,21 +4,28 @@ import me.jiangcai.common.jpa.entity.Foo
 import me.jiangcai.common.jpa.entity.Foo_
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Offset
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId.systemDefault
+import java.time.temporal.ChronoField
+import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
 import javax.persistence.criteria.Expression
 import javax.persistence.criteria.Root
+import javax.sql.DataSource
 import kotlin.random.Random
 
 /**
@@ -31,8 +38,31 @@ class CriteriaFunctionBuilderTest {
 
     @Autowired
     private lateinit var entityManagerFactory: EntityManagerFactory
+    @Autowired
+    private lateinit var dataSource: DataSource
 
-    private fun runInTx(work: (EntityManager) -> Unit) {
+    @Test
+    @Ignore
+    fun jdbc() {
+        // jdbc ……
+        // 插入一个普通时间？ cst?
+        // Date.from(source.atZone(systemDefault()).toInstant())
+        val template = JdbcTemplate(dataSource)
+        template.execute("DELETE FROM foo")
+        template.execute("INSERT INTO foo(`created`) VALUES(?)") {
+            //            it.setDate(1, Date(System.currentTimeMillis()))
+            it.setTimestamp(1, Timestamp.from(java.util.Date(System.currentTimeMillis()).toInstant()))
+            it.executeUpdate()
+        }
+        template.execute("INSERT INTO foo(`created`) VALUES(?)") {
+            //            it.setDate(1, Date(Date.from(LocalDateTime.now().atZone(systemDefault()).toInstant()).time))
+            it.setTimestamp(1, Timestamp.from(LocalDateTime.now().atZone(systemDefault()).toInstant()))
+            it.executeUpdate()
+        }
+    }
+
+
+    private fun runInTx(commit: Boolean = false, work: (EntityManager) -> Unit) {
         val entityManager = entityManagerFactory.createEntityManager()
         try {
             entityManager.transaction.begin()
@@ -42,7 +72,10 @@ class CriteriaFunctionBuilderTest {
 
 
         } finally {
-            entityManager.transaction.rollback()
+            if (commit)
+                entityManager.transaction.commit()
+            else
+                entityManager.transaction.rollback()
             entityManager.close()
         }
     }
@@ -70,10 +103,13 @@ class CriteriaFunctionBuilderTest {
                 })
                     .isEqualTo(Math.floor(f1.value!!.toDouble()).toInt())
 
-                assertThat(selectPart(it) { cf, root ->
-                    cf.exp(root.get(Foo_.value))
-                })
-                    .isCloseTo(Math.exp(f1.value!!.toDouble()).toBigDecimal(), Offset.offset(BigDecimal("0.000001")))
+                // exp 太大了 不好测试
+                @Suppress("ConstantConditionIf")
+                if (false)
+                    assertThat(selectPart(it) { cf, root ->
+                        cf.exp(root.get(Foo_.value))
+                    })
+                        .isCloseTo(Math.exp(f1.value!!.toDouble()).toBigDecimal(), Offset.offset(BigDecimal("0.1")))
             }
         }
     }
@@ -86,7 +122,7 @@ class CriteriaFunctionBuilderTest {
             it.persist(f1)
 
             val cb = it.criteriaBuilder
-            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff(timezoneDiff).build()
             val cq = cb.createQuery(Long::class.java)
             val root = cq.from(Foo::class.java)
 
@@ -195,7 +231,7 @@ class CriteriaFunctionBuilderTest {
             it.persist(f1)
 
             val cb = it.criteriaBuilder
-            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff(timezoneDiff).build()
             val cq = cb.createQuery(Long::class.java)
             val root = cq.from(Foo::class.java)
 
@@ -313,7 +349,7 @@ class CriteriaFunctionBuilderTest {
             it.persist(f1)
 
             val cb = it.criteriaBuilder
-            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff(timezoneDiff).build()
             val cq = cb.createQuery(Long::class.java)
             val root = cq.from(Foo::class.java)
             // 按照date查询 今天，1 昨天 0 明天 0
@@ -361,7 +397,7 @@ class CriteriaFunctionBuilderTest {
     fun onlyDateFun() {
         runInTx {
             val cb = it.criteriaBuilder
-            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff(timezoneDiff).build()
             val cq = cb.createQuery(Long::class.java)
             val root = cq.from(Foo::class.java)
 
@@ -395,7 +431,7 @@ class CriteriaFunctionBuilderTest {
             it.persist(f1)
 
             val cb = it.criteriaBuilder
-            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+            val b = CriteriaFunctionBuilder(cb).forTimezoneDiff(timezoneDiff).build()
             val cq = cb.createQuery(Long::class.java)
             val root = cq.from(Foo::class.java)
             // 按照date查询 今天，1 昨天 0 明天 0
@@ -582,14 +618,36 @@ class CriteriaFunctionBuilderTest {
             entityManager.persist(f1)
             entityManager.flush()
 
+            val random = Random(System.currentTimeMillis())
+
             // 目标值
             val target = f1.created.plusMonths(1).plusYears(1)
             while (true) {
                 if (f1.created > target)
                     break
                 f1.created = f1.created.plusDays(1)
+                    .plus(random.nextLong(1, 60L * 60L * 1000000L), ChronoUnit.MICROS) // 最多 产生1h的变化 也就是
+                // 把微妙数清空
+                f1.created = f1.created.minus(f1.created.get(ChronoField.MICRO_OF_SECOND).toLong(), ChronoUnit.MICROS)
                 println(f1.created)
                 entityManager.merge(f1)
+
+                // 时刻
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.hour(root.get("created")) }
+                )
+                    // 这里也会有误差，但概率很低 ， 59,59 才会出现
+                    .isEqualTo(f1.created.hour)
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.minute(root.get("created")) }
+                )
+                    // 因为数据库系统会默认进行四舍五入，所以会有1秒的误差
+                    .isCloseTo(f1.created.minute, Offset.offset(1))
+                assertThat(
+                    selectPart(entityManager) { cf, root -> cf.second(root.get("created")) }
+                )
+                    // 因为数据库系统会默认进行四舍五入，所以会有1秒的误差
+                    .isCloseTo(f1.created.second, Offset.offset(1))
 
                 assertThat(
                     selectPart(entityManager) { cf, root -> cf.year(root.get("created")) }
@@ -646,6 +704,8 @@ class CriteriaFunctionBuilderTest {
         }
     }
 
+    private val timezoneDiff = "00:00"
+
     private inline fun <reified T> selectPart(
         entityManager: EntityManager,
         result: ((CriteriaFunction, Root<Foo>) -> Expression<T>)
@@ -654,7 +714,8 @@ class CriteriaFunctionBuilderTest {
         val cq = cb.createQuery(T::class.java)
         val root = cq.from(Foo::class.java)
 
-        val b = CriteriaFunctionBuilder(cb).forTimezoneDiff("14:00").build()
+
+        val b = CriteriaFunctionBuilder(cb).forTimezoneDiff(timezoneDiff).build()
 
         return entityManager.createQuery(cq.select(result(b, root))).singleResult
     }

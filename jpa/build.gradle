@@ -12,7 +12,9 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
-    testRuntime group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
+//    testRuntime group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
+//    结论是mysql driver 某个版本开始，将时区考虑到了时间里，不知道谁干的……
+    testRuntime group: 'mysql', name: 'mysql-connector-java', version: '5.1.40'
     testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
     testCompile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
