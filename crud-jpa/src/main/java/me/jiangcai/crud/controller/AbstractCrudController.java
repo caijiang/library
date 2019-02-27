@@ -121,7 +121,7 @@ public abstract class AbstractCrudController<T extends CrudFriendly<ID>, ID exte
         }
         // 允许注册更多修改器
         // 获取数据类型
-        PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(currentClass(), name);
+        PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(entity.getClass(), name);
         if (pd == null)
             throw new CrudNotFoundException();
 
