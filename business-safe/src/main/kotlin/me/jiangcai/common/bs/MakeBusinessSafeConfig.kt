@@ -31,7 +31,7 @@ open class MakeBusinessSafeConfig : Ordered {
 
     @Around("safePoint()")
     @Throws(Throwable::class)
-    fun aroundSave(pjp: ProceedingJoinPoint): Any {
+    fun aroundSave(pjp: ProceedingJoinPoint): Any? {
         // start stopwatch
 
         val lock = toLocker(pjp)
@@ -61,7 +61,7 @@ open class MakeBusinessSafeConfig : Ordered {
     }
 
 
-    private fun multiLock(locks: Array<Any>, pjp: ProceedingJoinPoint): Any {
+    private fun multiLock(locks: Array<Any>, pjp: ProceedingJoinPoint): Any? {
         val lock = locks[0]
         val lockerObject = when (lock) {
             is String ->
