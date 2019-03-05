@@ -1,10 +1,12 @@
 package me.jiangcai.common.upgrade.impl
 
+import me.jiangcai.common.upgrade.UpgradableBean
 import me.jiangcai.common.upgrade.UpgradeService
 import me.jiangcai.common.upgrade.VersionInfoService
 import me.jiangcai.common.upgrade.VersionUpgrade
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
 
@@ -15,6 +17,8 @@ import java.lang.reflect.ParameterizedType
 @Service
 class UpgradeServiceImpl(
     @Autowired
+    private val applicationContext: ApplicationContext,
+    @Autowired
     private val versionInfoService: VersionInfoService
 ) : UpgradeService {
     private val log = LogFactory.getLog(UpgradeServiceImpl::class.java)
@@ -23,6 +27,12 @@ class UpgradeServiceImpl(
         val type = upgrade.javaClass.genericInterfaces[0] as ParameterizedType
 
         val versionType = type.actualTypeArguments[0] as Class<T>
+
+        core(versionType, upgrade)
+
+    }
+
+    private fun <T : Enum<*>> core(versionType: Class<T>, upgrade: VersionUpgrade<T>?) {
         val currentVersion = versionType.enumConstants[versionType.enumConstants.size - 1]
 
         log.debug("Subsystem should upgrade to $currentVersion")
@@ -41,11 +51,10 @@ class UpgradeServiceImpl(
         } catch (ex: Exception) {
             throw InternalError("Failed Upgrade Database", ex)
         }
-
     }
 
     @Throws(Exception::class)
-    private fun <T : Enum<*>> upgrade(clazz: Class<T>, origin: T?, target: T, upgrade: VersionUpgrade<T>) {
+    private fun <T : Enum<*>> upgrade(clazz: Class<T>, origin: T?, target: T, upgrade: VersionUpgrade<T>?) {
         log.debug("Subsystem prepare to upgrade to $target")
         var started = false
         for (step in clazz.enumConstants) {
@@ -55,7 +64,16 @@ class UpgradeServiceImpl(
 
             if (started) {
                 log.debug("Subsystem upgrade step: to $target")
-                upgrade.upgradeToVersion(step)
+                upgrade?.upgradeToVersion(step)
+                if (upgrade == null) {
+                    applicationContext.getBeansOfType(UpgradableBean::class.java)
+                        .values
+                        .filter { it.supportVersionEnum(clazz) }
+                        .forEach {
+                            it.upgradeTo(step)
+                        }
+                } else
+                    upgrade.upgradeToVersion(step)
                 log.debug("Subsystem upgrade step done")
             }
 
@@ -65,4 +83,9 @@ class UpgradeServiceImpl(
 
         versionInfoService.updateVersion(target)
     }
+
+    override fun <T : Enum<*>> systemUpgrade(versionEnumType: Class<T>) {
+        core(versionEnumType, null)
+    }
+
 }

@@ -38,6 +38,20 @@ class UpgradeServiceTest {
             }
         }
 
+        @Bean
+        fun abc(): UpgradableBean {
+            return object : UpgradableBean {
+                override fun <T : Enum<*>> supportVersionEnum(versionEnumType: Class<T>): Boolean {
+                    return versionEnumType == FemaleVersion::class.java
+                }
+
+                override fun <T : Enum<*>> upgradeTo(version: T) {
+                    log.info("try to upgrade to $version")
+                }
+
+            }
+        }
+
     }
 
     private val log = LogFactory.getLog(UpgradeServiceTest::class.java)
@@ -49,6 +63,14 @@ class UpgradeServiceTest {
     @Test
     @Throws(Exception::class)
     fun systemUpgrade() {
+
+        upgradeService!!.systemUpgrade(FemaleVersion::class.java)
+
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun oldSystemUpgrade() {
         upgradeService!!.systemUpgrade(object : VersionUpgrade<FemaleVersion> {
             @Throws(Exception::class)
             override fun upgradeToVersion(version: FemaleVersion) {
