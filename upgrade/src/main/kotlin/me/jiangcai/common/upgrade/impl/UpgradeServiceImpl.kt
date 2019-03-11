@@ -64,13 +64,16 @@ class UpgradeServiceImpl(
 
             if (started) {
                 log.debug("Subsystem upgrade step: to $target")
-                upgrade?.upgradeToVersion(step)
                 if (upgrade == null) {
                     applicationContext.getBeansOfType(UpgradableBean::class.java)
                         .values
                         .filter { it.supportVersionEnum(clazz) }
                         .forEach {
-                            it.upgradeTo(step)
+                            try {
+                                it.upgradeTo(step)
+                            } catch (e: Throwable) {
+                                log.warn("exception on upgrade:", e)
+                            }
                         }
                 } else
                     upgrade.upgradeToVersion(step)
