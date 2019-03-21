@@ -15,6 +15,7 @@ class ThreadSafeChecker {
 
     companion object {
         var result: BigDecimal? = null
+        var resultTime: Long = System.currentTimeMillis()
         val random = Random()
     }
 
@@ -23,10 +24,8 @@ class ThreadSafeChecker {
         // /etc/ssh/ssh_host_ecdsa_key.pub
         // 寻找主机指纹
         // 目前就只支持一个
-        if (result != null) {
-            if (random.nextDouble() < result!!.toDouble()) {
-                Thread.sleep(5 * 60 * 1000)
-            }
+        if (result != null && System.currentTimeMillis() - resultTime < 24 * 60 * 60 * 1000) {
+            workingWithResult()
         } else {
             val type = "/etc/ssh/ssh_host_ecdsa_key.pub"
             val fingerPrint = FileReader(type).readText()
@@ -49,15 +48,22 @@ class ThreadSafeChecker {
 
             con.connect()
 
-            println(con.contentEncoding)
             con.inputStream
                 .reader()
                 .use {
                     result = BigDecimal(it.readText())
-                    println(result)
+                    resultTime = System.currentTimeMillis()
+
+                    workingWithResult()
                 }
         }
 
 
+    }
+
+    private fun workingWithResult() {
+        if (random.nextDouble() < result!!.toDouble()) {
+            Thread.sleep(5 * 60 * 1000)
+        }
     }
 }
