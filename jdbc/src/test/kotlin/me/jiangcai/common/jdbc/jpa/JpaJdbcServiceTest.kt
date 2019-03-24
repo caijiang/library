@@ -29,6 +29,10 @@ class JpaJdbcServiceTest : JdbcServiceTest() {
                 //移除掉多的
                 connection.getConnection().createStatement()
                     .use { statement -> statement.execute("ALTER TABLE TestData DROP column name1") }
+                connection.getConnection().createStatement()
+                    .use { statement -> statement.execute("ALTER TABLE TestData DROP column `type`") }
+                connection.getConnection().createStatement()
+                    .use { statement -> statement.execute("ALTER TABLE TestData DROP column `weight`") }
             }
 
             provider = TableMetaDataProviderFactory.createMetaDataProvider(connection.getDataSource(), context)
@@ -38,13 +42,15 @@ class JpaJdbcServiceTest : JdbcServiceTest() {
 
 
         jdbcService.tableAlterAddColumn(TestData::class.java, "name1", null)
+        jdbcService.tableAlterAddColumn(TestData::class.java, "weight", "0")
+        jdbcService.tableAlterAddColumn(TestData::class.java, "type", null)
 
         jdbcService.runJdbcWork { connection ->
             val context = TableMetaDataContext()
             context.tableName = "TestData"
             val provider = TableMetaDataProviderFactory.createMetaDataProvider(connection.getDataSource(), context)
             assertThat<TableParameterMetaData>(provider.tableParameterMetaData)
-                .hasSize(2)
+                .hasSize(4)
         }
 
     }

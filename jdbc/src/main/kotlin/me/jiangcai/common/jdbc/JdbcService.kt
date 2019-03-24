@@ -1,12 +1,24 @@
 package me.jiangcai.common.jdbc
 
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
 import java.sql.SQLException
 
 /**
  * @author CJ
  */
 interface JdbcService {
+
+    /**
+     * 批量处理一个SQL脚本。
+     *
+     * 实测可支持范围列表:
+     * * mysql
+     *
+     * @param sql 会在该方法中关闭流
+     */
+    @Transactional
+    fun executeSQLScript(sql: InputStream)
 
 
     /**

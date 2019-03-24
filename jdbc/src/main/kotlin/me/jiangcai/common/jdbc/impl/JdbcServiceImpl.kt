@@ -7,6 +7,7 @@ import me.jiangcai.common.jdbc.JdbcService
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.io.InputStream
 import java.lang.reflect.Field
 import java.sql.Connection
 import java.sql.SQLException
@@ -29,6 +30,42 @@ class JdbcServiceImpl : JdbcService {
 
     private val log = LogFactory.getLog(JdbcServiceImpl::class.java)
 
+    override fun executeSQLScript(sql: InputStream) {
+        val d = Regex("^DELIMITER\\s+(.+)$", RegexOption.IGNORE_CASE)
+        val c = Regex("\\s*#.+")
+        runJdbcWork { provider ->
+            provider.getConnection().createStatement()
+                .use { stmt ->
+
+                    sql.reader()
+                        .use { reader ->
+                            var delimiter = ";"
+                            val buffer = StringBuilder()
+
+                            reader.readLines()
+                                .forEach {
+                                    // 遇上 DELIMITER $$
+                                    if (it.matches(d)) {
+                                        // 更换
+                                        delimiter = d.matchEntire(it)!!.groupValues[1]
+                                    } else if (!it.matches(c)) {
+                                        buffer.append(" ").append(it)
+                                        // 如果结尾为; 则移除
+                                        if (buffer.toString().endsWith(delimiter)) {
+                                            // 结束了。那么移除尾部的 delimiter 并且执行脚本。
+                                            val script = buffer.toString().removeSuffix(delimiter).trim()
+                                            if (script.isNotEmpty()) {
+                                                stmt.execute(script)
+                                            }
+                                            buffer.setLength(0)
+                                        }
+                                    }
+                                }
+                        }
+
+                }
+        }
+    }
 
     @Throws(SQLException::class, NoSuchFieldException::class)
     override fun tableAlterAddColumn(entityClass: Class<*>, field: String, defaultValue: String?) {
@@ -85,6 +122,9 @@ class JdbcServiceImpl : JdbcService {
                 primitive = true
                 type = Primitives.wrap(type)
                 // 如果是基本类型 那么先
+            } else if (type.isEnum) {
+                primitive = true
+                type = Primitives.wrap(Int::class.java)
             }
             val fieldTypeDefinition = connectionProvider.profile().getFieldTypeDefinition(type)
             sql.append(' ').append(fieldTypeDefinition.name)
