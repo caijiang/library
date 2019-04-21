@@ -2,6 +2,7 @@ package com.mingshz.login.test
 
 import com.mingshz.login.EnableClassicLogin
 import com.mingshz.login.LoginDelegate
+import com.mingshz.login.test.bean.SecureController
 import com.mingshz.login.test.bean.TestLoginDelegate
 import me.jiangcai.common.jpa.EnableJpa
 import me.jiangcai.common.jpa.JpaPackageScanner
@@ -28,6 +29,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 open class TestConfig : JpaPackageScanner {
     @Bean
     open fun loginDelegate(): LoginDelegate = TestLoginDelegate()
+
+    @Bean
+    open fun secureController(): SecureController = SecureController()
 
     override fun addJpaPackage(prefix: String, set: MutableSet<String>) {
         set.add("com.mingshz.login.test.entity")

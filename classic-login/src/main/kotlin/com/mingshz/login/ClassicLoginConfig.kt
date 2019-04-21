@@ -3,6 +3,9 @@ package com.mingshz.login
 import com.mingshz.login.password.PasswordFilter
 import com.mingshz.login.password.PasswordProvider
 import com.mingshz.login.password.UsernamePasswordAuthenticationType
+import com.mingshz.login.token.TokenAuthenticationType
+import com.mingshz.login.token.TokenFilter
+import com.mingshz.login.token.TokenProvider
 import me.jiangcai.common.jpa.JpaPackageScanner
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.RootBeanDefinition
@@ -17,6 +20,11 @@ import org.springframework.http.MediaType
 internal class ClassicLoginConfig : ImportBeanDefinitionRegistrar {
 
     companion object {
+        /**
+         * 强制通过token授权的token参数名称
+         * 通过请求中携带有这个请求参数都可进行强制登录，并且继续业务处理
+         */
+        var forceAuthenticationTokenParameterName: String = "_token"
         /**
          * 启用经典登录的实体类全限定名称
          */
@@ -52,6 +60,9 @@ internal class ClassicLoginConfig : ImportBeanDefinitionRegistrar {
         registry: BeanDefinitionRegistry
     ) {
         val data = importingClassMetadata.getAnnotationAttributes("com.mingshz.login.EnableClassicLogin")
+        data["forceAuthenticationTokenParameterName"]?.let {
+            forceAuthenticationTokenParameterName = it.toString()
+        }
         data["loginUri"]?.let {
             loginUri = it.toString()
         }
@@ -69,28 +80,22 @@ internal class ClassicLoginConfig : ImportBeanDefinitionRegistrar {
         }
         loginClassName = data["loginClassName"].toString()
 
-        val df = RootBeanDefinition()
-        df.beanClass = ClassicLoginConfigCore::class.java
-        registry.registerBeanDefinition("classicLoginConfigCore", df)
+        registry.registerBean(ClassicLoginConfigCore::class.java)
+        registry.registerBean(UsernamePasswordAuthenticationType::class.java)
+        registry.registerBean(PasswordFilter::class.java)
+        registry.registerBean(PasswordProvider::class.java)
 
-        val df2 = RootBeanDefinition()
-        df2.beanClass = UsernamePasswordAuthenticationType::class.java
-        registry.registerBeanDefinition("usernamePasswordAuthenticationType", df2)
-//
-//
-//        val df4 = RootBeanDefinition()
-//        df4.beanClass = LifeAuthenticationManager::class.java
-//        registry.registerBeanDefinition("authenticationManager", df4)
-
-        val df3 = RootBeanDefinition()
-        df3.beanClass = PasswordFilter::class.java
-        registry.registerBeanDefinition("passwordFilter", df3)
-
-        val df4 = RootBeanDefinition()
-        df4.beanClass = PasswordProvider::class.java
-        registry.registerBeanDefinition("passwordProvider", df4)
+        registry.registerBean(TokenFilter::class.java)
+        registry.registerBean(TokenProvider::class.java)
+        registry.registerBean(TokenAuthenticationType::class.java)
 
     }
 
 
+}
+
+private fun BeanDefinitionRegistry.registerBean(type: Class<*>) {
+    val df = RootBeanDefinition()
+    df.beanClass = type
+    registerBeanDefinition(type.simpleName.decapitalize(), df)
 }

@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.temporal.ChronoUnit
 
 /**
  * 客户端
@@ -26,8 +27,9 @@ class ClassicLoginConfigTest : MvcTest() {
         val u = User()
         u.username = randomMobile()
         val rawPassword = randomMobile()
-        classicLoginService.newLogin(u, rawPassword)
+        val user = classicLoginService.newLogin(u, rawPassword)
 
+        // 用户密码登录
         mockMvc.perform(
             post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -57,6 +59,21 @@ class ClassicLoginConfigTest : MvcTest() {
                 )
         )
             .andExpect(status().isUnauthorized)
+
+        // 快速登录
+        val uriBuilder = StringBuilder("/mine")
+        mockMvc.perform(
+            get(uriBuilder.toString())
+        )
+            .andExpect(status().isForbidden)
+
+        classicLoginService.requestToken(user, ChronoUnit.DAYS, 1L, uriBuilder)
+
+
+        mockMvc.perform(
+            get(uriBuilder.toString())
+        )
+            .andExpect(status().isOk)
     }
 
 }

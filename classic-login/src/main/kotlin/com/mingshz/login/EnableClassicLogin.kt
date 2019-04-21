@@ -19,6 +19,11 @@ import java.lang.annotation.Inherited
 @Import(ClassicLoginConfigPrefix::class, ClassicLoginConfig::class, ClassicLoginSecurityConfig::class)
 annotation class EnableClassicLogin(
     /**
+     * 强制通过token授权的token参数名称
+     * 通过请求中携带有这个请求参数都可进行强制登录，并且继续业务处理
+     */
+    val forceAuthenticationTokenParameterName: String = "_token",
+    /**
      * 启用经典登录的实体类全限定名称
      */
     val loginClassName: String,
