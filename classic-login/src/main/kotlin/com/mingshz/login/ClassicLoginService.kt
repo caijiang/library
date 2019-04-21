@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.transaction.annotation.Transactional
 
 /**
+ * 提供登录相关的服务
  * @author CJ
  */
 interface ClassicLoginService<T : Login> : UserDetailsService {

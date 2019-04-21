@@ -3,9 +3,13 @@
 package com.mingshz.login.password
 
 import com.mingshz.login.ClassicLoginConfig
+import com.mingshz.login.LoginDelegate
+import com.mingshz.login.entity.Login
 import org.apache.commons.logging.LogFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.springframework.context.annotation.DependsOn
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.server.ServletServerHttpRequest
@@ -22,7 +26,11 @@ import javax.servlet.http.HttpServletResponse
 /**
  * @author CJ
  */
-class PasswordFilter : ApplicationContextAware, AbstractAuthenticationProcessingFilter(
+@DependsOn("authenticationManager")
+class PasswordFilter(
+    @Autowired
+    private val loginDelegate: LoginDelegate
+) : ApplicationContextAware, AbstractAuthenticationProcessingFilter(
     AntPathRequestMatcher(
         ClassicLoginConfig.loginUri,
         ClassicLoginConfig.loginMethod
@@ -32,6 +40,14 @@ class PasswordFilter : ApplicationContextAware, AbstractAuthenticationProcessing
         authenticationManager = applicationContext.getBean(AuthenticationManager::class.java)
     }
 
+    init {
+        setAuthenticationSuccessHandler { request, response, authentication ->
+            loginDelegate.authenticationSuccess(request, response, authentication, authentication.principal as Login)
+        }
+        setAuthenticationFailureHandler { request, response, exception ->
+            loginDelegate.authenticationFailure(request, response, exception)
+        }
+    }
 
     lateinit var converters: List<HttpMessageConverter<*>>
 
