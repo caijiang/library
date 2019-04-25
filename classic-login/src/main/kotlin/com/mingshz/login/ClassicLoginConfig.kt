@@ -1,14 +1,9 @@
 package com.mingshz.login
 
-import com.mingshz.login.password.PasswordFilter
-import com.mingshz.login.password.PasswordProvider
-import com.mingshz.login.password.UsernamePasswordAuthenticationType
-import com.mingshz.login.token.TokenAuthenticationType
-import com.mingshz.login.token.TokenFilter
-import com.mingshz.login.token.TokenProvider
 import me.jiangcai.common.jpa.JpaPackageScanner
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.RootBeanDefinition
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar
 import org.springframework.core.type.AnnotationMetadata
@@ -81,21 +76,33 @@ internal class ClassicLoginConfig : ImportBeanDefinitionRegistrar {
         loginClassName = data["loginClassName"].toString()
 
         registry.registerBean(ClassicLoginConfigCore::class.java)
-        registry.registerBean(UsernamePasswordAuthenticationType::class.java)
-        registry.registerBean(PasswordFilter::class.java)
-        registry.registerBean(PasswordProvider::class.java)
 
-        registry.registerBean(TokenFilter::class.java)
-        registry.registerBean(TokenProvider::class.java)
-        registry.registerBean(TokenAuthenticationType::class.java)
-
+        registry.registerBean(TokenConfig::class.java)
+        registry.registerBean(PasswordConfig::class.java)
+        data["loginExtraConfigClasses"]?.let { list ->
+            (list as Array<*>).forEach {
+                registry.registerBean(it.toString())
+            }
+        }
     }
 
 
 }
 
+
+@ComponentScan("com.mingshz.login.token")
+@Configuration
+internal open class TokenConfig
+
+@ComponentScan("com.mingshz.login.password")
+@Configuration
+internal open class PasswordConfig
+
+private fun BeanDefinitionRegistry.registerBean(type: String) {
+    this.registerBean(Class.forName(type))
+}
 private fun BeanDefinitionRegistry.registerBean(type: Class<*>) {
     val df = RootBeanDefinition()
     df.beanClass = type
-    registerBeanDefinition(type.simpleName.decapitalize(), df)
+    registerBeanDefinition(type.name, df)
 }

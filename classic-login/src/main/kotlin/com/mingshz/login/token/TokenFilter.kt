@@ -7,11 +7,13 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.DependsOn
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
+import org.springframework.stereotype.Component
 import javax.servlet.http.HttpServletRequest
 
 /**
  * @author CJ
  */
+@Component
 @DependsOn("authenticationManager")
 class TokenFilter : ApplicationContextAware, AbstractPreAuthenticatedProcessingFilter() {
 

@@ -5,6 +5,7 @@ import com.mingshz.login.test.entity.User
 import me.jiangcai.common.test.MvcTest
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -20,9 +21,12 @@ class ClassicLoginConfigTest : MvcTest() {
 
     @Autowired
     private lateinit var classicLoginService: ClassicLoginService<User>
+    @Autowired
+    private lateinit var applicationContext: ApplicationContext
 
     @Test
     fun go() {
+        println(applicationContext)
 
         val u = User()
         u.username = randomMobile()

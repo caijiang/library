@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.stereotype.Component
 import org.springframework.web.HttpMediaTypeNotSupportedException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletResponse
 /**
  * @author CJ
  */
+@Component
 @DependsOn("authenticationManager")
 class PasswordFilter(
     @Autowired

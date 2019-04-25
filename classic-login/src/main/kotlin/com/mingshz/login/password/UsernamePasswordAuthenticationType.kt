@@ -4,12 +4,14 @@ import com.mingshz.login.AuthenticationType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.stereotype.Component
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import javax.servlet.Filter
 
 /**
  * @author CJ
  */
+@Component
 class UsernamePasswordAuthenticationType(
     @Autowired
     private val passwordFilter: PasswordFilter,

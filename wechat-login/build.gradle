@@ -1,18 +1,14 @@
 group 'me.jiangcai.common'
 version '1.0.0-SNAPSHOT'
 
-//apply plugin: "kotlin-spring"
 
 dependencies {
     compileOnly "javax:javaee-api:$javaee_version"
-    api project(':ext')
+    api project(':classic-login')
+    testApi project(':classic-login').sourceSets.test.output
     api project(':jpa')
-    compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.0.4.RELEASE'
-    compile group: 'org.springframework.security', name: 'spring-security-config', version: '4.0.4.RELEASE'
-    compile group: 'org.springframework', name: 'spring-aspects', version: '4.3.8.RELEASE'
-    compile group: 'org.springframework', name: 'spring-context', version: '4.3.8.RELEASE'
-    compile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
-    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
+    compile "me.jiangcai.wx:weixin-web:2.3.0-SNAPSHOT"
+    testCompile "me.jiangcai.wx:weixin-test:2.3.0-SNAPSHOT"
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
@@ -24,4 +20,10 @@ dependencies {
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
     testCompile project(':test')
 
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
+}
+
+repositories {
+    maven { url 'https://jitpack.io' }
 }

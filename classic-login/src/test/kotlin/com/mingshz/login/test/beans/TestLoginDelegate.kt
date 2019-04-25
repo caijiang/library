@@ -1,4 +1,4 @@
-package com.mingshz.login.test.bean
+package com.mingshz.login.test.beans
 
 import com.mingshz.login.LoginDelegate
 import com.mingshz.login.entity.Login

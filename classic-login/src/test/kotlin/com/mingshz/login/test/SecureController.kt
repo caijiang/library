@@ -1,19 +1,19 @@
-package com.mingshz.login.test.bean
+package com.mingshz.login.test
 
 import com.mingshz.login.test.entity.User
+import org.springframework.security.access.annotation.Secured
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody
 
 /**
  * @author CJ
  */
-@Controller
-class SecureController {
+interface SecureController {
+    @PreAuthorize("!isAnonymous()")
+    @Secured
     @GetMapping("/mine")
     @ResponseBody
-    fun mine(@AuthenticationPrincipal user: User): String? {
-        return user.username
-    }
+    fun mine(@AuthenticationPrincipal user: User?): String?
 }

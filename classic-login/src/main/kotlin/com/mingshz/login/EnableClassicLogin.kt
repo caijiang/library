@@ -19,6 +19,14 @@ import java.lang.annotation.Inherited
 @Import(ClassicLoginConfigPrefix::class, ClassicLoginConfig::class, ClassicLoginSecurityConfig::class)
 annotation class EnableClassicLogin(
     /**
+     * 额外载入的配置类
+     */
+    val loginExtraConfigClasses: Array<String> = [],
+    /**
+     * 额外可载入[AuthenticationType]的配置类名
+     */
+    val loginExtraAuthenticationTypeConfigClasses: Array<String> = [],
+    /**
      * 强制通过token授权的token参数名称
      * 通过请求中携带有这个请求参数都可进行强制登录，并且继续业务处理
      */
@@ -41,5 +49,9 @@ annotation class EnableClassicLogin(
     val loginRequestContentType: String = MediaType.APPLICATION_JSON_VALUE,
     val loginRequestUsernameParameterName: String = "username",
     val loginRequestPasswordParameterName: String = "password"
-)
+) {
+    companion object {
+        val loginExtraAuthenticationTypeConfigClasses = mutableListOf<Class<*>>()
+    }
+}
 
