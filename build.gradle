@@ -1,6 +1,7 @@
 buildscript {
     ext.javaee_version = "7.0"
     ext.kotlin_version = '1.3.11'
+    ext.hibernate_version = '5.2.10.Final'
 
     repositories {
         mavenCentral()
@@ -43,6 +44,7 @@ subprojects {
 
     dependencies {
         compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+//        dokkaRuntime "org.jetbrains.dokka:dokka-fatjar:0.9.16"
     }
 
     compileKotlin {

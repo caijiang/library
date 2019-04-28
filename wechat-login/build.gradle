@@ -1,8 +1,10 @@
 group 'me.jiangcai.common'
 version '1.0.0-SNAPSHOT'
 
+apply plugin: 'kotlin-kapt'
 
 dependencies {
+    kapt "org.hibernate:hibernate-jpamodelgen:$hibernate_version"
     compileOnly "javax:javaee-api:$javaee_version"
     api project(':classic-login')
     testApi project(':classic-login').sourceSets.test.output
