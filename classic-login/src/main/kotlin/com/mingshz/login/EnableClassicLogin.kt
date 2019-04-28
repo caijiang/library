@@ -1,6 +1,5 @@
 package com.mingshz.login
 
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import java.lang.annotation.Inherited
@@ -15,7 +14,6 @@ import java.lang.annotation.Inherited
 @MustBeDocumented
 @Inherited
 //@EnableWebMvc
-@ComponentScan("com.mingshz.login.bean")
 @Import(ClassicLoginConfigPrefix::class, ClassicLoginConfig::class, ClassicLoginSecurityConfig::class)
 annotation class EnableClassicLogin(
     /**
