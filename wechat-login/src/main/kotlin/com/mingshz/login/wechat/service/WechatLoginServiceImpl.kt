@@ -37,7 +37,7 @@ class WechatLoginServiceImpl(
     }
 
     override fun assignWechat(login: Login, wechatId: AppIdOpenID) {
-        val wl = entityManager.find(WechatLogin::class.java, wechatId) as WechatLogin?
+        val wl = entityManager.find(WechatLogin::class.java, wechatId)
 
         if (wl != null) {
             wl.login = login

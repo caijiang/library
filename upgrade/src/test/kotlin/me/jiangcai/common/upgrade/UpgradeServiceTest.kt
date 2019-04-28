@@ -68,6 +68,7 @@ class UpgradeServiceTest {
 
     }
 
+    @Suppress("DEPRECATION")
     @Test
     @Throws(Exception::class)
     fun oldSystemUpgrade() {
