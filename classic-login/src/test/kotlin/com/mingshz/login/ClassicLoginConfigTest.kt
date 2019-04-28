@@ -7,6 +7,7 @@ import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockHttpSession
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -66,16 +67,27 @@ class ClassicLoginConfigTest : MvcTest() {
 
         // 快速登录
         val uriBuilder = StringBuilder("/mine")
-        mockMvc.perform(
+        val session = mockMvc.perform(
             get(uriBuilder.toString())
         )
             .andExpect(status().isForbidden)
+            .andReturn()
+            .request
+            .session
 
         classicLoginService.requestToken(user, ChronoUnit.DAYS, 1L, uriBuilder)
 
 
         mockMvc.perform(
             get(uriBuilder.toString())
+                .session(session as MockHttpSession)
+        )
+            .andExpect(status().isOk)
+
+
+        mockMvc.perform(
+            get("/mine")
+                .session(session)
         )
             .andExpect(status().isOk)
     }

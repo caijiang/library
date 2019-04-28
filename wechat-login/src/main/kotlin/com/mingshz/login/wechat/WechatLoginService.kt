@@ -1,9 +1,11 @@
 package com.mingshz.login.wechat
 
+import com.mingshz.login.entity.Login
 import me.jiangcai.wx.model.WeixinUserDetail
 import me.jiangcai.wx.standard.entity.StandardWeixinUser
 import me.jiangcai.wx.standard.entity.support.AppIdOpenID
 import org.springframework.transaction.annotation.Transactional
+import javax.servlet.http.HttpServletRequest
 
 /**
  * 微信登录相关服务。
@@ -23,5 +25,23 @@ interface WechatLoginService {
     @Transactional
     fun requireSave(detail: WeixinUserDetail)
 
+    /**
+     * @param id 微信概要信息
+     * @return 具体身份，如果可能的话
+     */
+    @Transactional(readOnly = true)
+    fun findLoginById(id: AppIdOpenID): Login?
+
+    /**
+     * 将特定微信用户绑定到特定身份
+     */
+    @Transactional
+    fun assignWechat(login: Login, wechatId: AppIdOpenID)
+
+    /**
+     * 将当前微信用户绑定到特定身份
+     */
+    @Transactional
+    fun assignWechat(login: Login, request: HttpServletRequest)
 
 }

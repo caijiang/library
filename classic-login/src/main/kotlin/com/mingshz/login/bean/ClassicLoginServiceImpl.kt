@@ -36,6 +36,11 @@ class ClassicLoginServiceImpl<T : Login>(
     @PersistenceContext
     private lateinit var entityManager: EntityManager
 
+    override fun findLogin(id: Long): T {
+        val type: Class<T> = Class.forName(ClassicLoginConfig.loginClassName!!) as Class<T>
+        return entityManager.find(type, id) ?: throw UsernameNotFoundException("can not find $id")
+    }
+
     override fun loadUserByUsername(username: String?): T {
         if (username.isNullOrEmpty())
             throw UsernameNotFoundException("null username")

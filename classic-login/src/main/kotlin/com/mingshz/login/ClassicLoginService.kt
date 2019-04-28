@@ -16,6 +16,13 @@ import java.time.temporal.TemporalUnit
 interface ClassicLoginService<T : Login> : UserDetailsService,
     AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
+    /**
+     * 根据id查找身份，
+     * @return never null 代替的是[UsernameNotFoundException]
+     */
+    @Throws(UsernameNotFoundException::class)
+    @Transactional(readOnly = true)
+    fun findLogin(id: Long): T
 
     @Transactional(readOnly = true)
     @Throws(UsernameNotFoundException::class)
