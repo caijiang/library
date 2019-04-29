@@ -38,7 +38,7 @@ interface ClassicLoginService<T : Login> : UserDetailsService,
      * @return 新用户
      */
     @Transactional
-    fun newLogin(login: T, rawPassword: String? = null): T
+    fun <X : T> newLogin(login: X, rawPassword: String? = null): X
 
     /**
      * 为这个用户请求快速登录token

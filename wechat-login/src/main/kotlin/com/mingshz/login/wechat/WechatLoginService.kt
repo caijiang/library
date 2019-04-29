@@ -32,6 +32,21 @@ interface WechatLoginService {
     @Transactional(readOnly = true)
     fun findLoginById(id: AppIdOpenID): Login?
 
+    @Transactional(readOnly = true)
+    fun findAllWechat(login: Login): List<StandardWeixinUser>
+
+    /**
+     * 解除绑定
+     */
+    @Transactional
+    fun releaseBind(id: AppIdOpenID)
+
+    /**
+     * 解除绑定
+     */
+    @Transactional
+    fun releaseBind(login: Login)
+
     /**
      * 将特定微信用户绑定到特定身份
      */

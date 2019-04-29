@@ -5,6 +5,7 @@ import com.mingshz.login.test.entity.User
 import com.mingshz.login.wechat.test.WechatTestConfig
 import me.jiangcai.common.test.MvcTest
 import me.jiangcai.common.test.hot.asWechatRequest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.internal.matchers.EndsWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,6 +36,8 @@ class WechatLoginConfigTest : MvcTest() {
 
     @Autowired
     private lateinit var classicLoginService: ClassicLoginService<User>
+    @Autowired
+    private lateinit var wechatLoginService: WechatLoginService
 
     @Test
     fun go() {
@@ -132,6 +135,15 @@ class WechatLoginConfigTest : MvcTest() {
         )
             .andExpect(status().isFound)
             .andExpect(header().string("location", url))
+
+
+        assertThat(wechatLoginService.findAllWechat(user))
+            .isNotEmpty
+
+        wechatLoginService.releaseBind(user)
+
+        assertThat(wechatLoginService.findAllWechat(user))
+            .isEmpty()
     }
 
 

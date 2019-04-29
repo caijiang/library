@@ -1,5 +1,6 @@
 package com.mingshz.login.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import me.jiangcai.common.ext.Constant
 import org.springframework.security.core.userdetails.UserDetails
 import java.time.LocalDateTime
@@ -78,6 +79,7 @@ abstract class Login(
         username = v
     }
 
+    @JsonIgnore
     override fun getPassword(): String? {
         return this.password
     }
