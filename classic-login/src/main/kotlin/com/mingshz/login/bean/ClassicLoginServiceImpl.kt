@@ -26,9 +26,11 @@ class ClassicLoginServiceImpl<T : Login>(
     private val classicPasswordEncoder: PasswordEncoder
 ) : ClassicLoginService<T> {
 
-    override fun newLogin(login: T, rawPassword: String): T {
+    override fun newLogin(login: T, rawPassword: String?): T {
         login.enabled = true
-        login.password = classicPasswordEncoder.encode(rawPassword)
+        rawPassword?.let {
+            login.password = classicPasswordEncoder.encode(it)
+        }
         entityManager.persist(login)
         return login
     }

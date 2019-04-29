@@ -34,11 +34,11 @@ interface ClassicLoginService<T : Login> : UserDetailsService,
 
     /**
      * 保存一个新用户
-     * @param rawPassword 明文密码
+     * @param rawPassword 明文密码，如果不传值则表示不允许用户以密码登录
      * @return 新用户
      */
     @Transactional
-    fun newLogin(login: T, rawPassword: String): T
+    fun newLogin(login: T, rawPassword: String? = null): T
 
     /**
      * 为这个用户请求快速登录token
