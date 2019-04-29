@@ -4,6 +4,7 @@ import com.mingshz.login.ClassicLoginService
 import com.mingshz.login.test.entity.User
 import com.mingshz.login.wechat.test.WechatTestConfig
 import me.jiangcai.common.test.MvcTest
+import me.jiangcai.common.test.hot.asWechatRequest
 import org.junit.Test
 import org.mockito.internal.matchers.EndsWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,7 +30,7 @@ class WechatLoginConfigTest : MvcTest() {
      */
     private fun wechatGet(urlTemplate: String, vararg urlVariables: Any?): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.get(urlTemplate, *urlVariables)
-            .header("user-agent", "MicroMessenger")
+            .asWechatRequest()
     }
 
     @Autowired

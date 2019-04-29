@@ -2,7 +2,7 @@ package com.mingshz.login
 
 import com.mingshz.login.test.TestConfig
 import com.mingshz.login.test.entity.User
-import me.jiangcai.common.test.MvcTest
+import me.jiangcai.common.test.classic.ClassicMvcTest
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -18,7 +18,7 @@ import java.time.temporal.ChronoUnit
  * @author CJ
  */
 @ContextConfiguration(classes = [TestConfig::class])
-class ClassicLoginConfigTest : MvcTest() {
+class ClassicLoginConfigTest : ClassicMvcTest() {
 
     @Autowired
     private lateinit var classicLoginService: ClassicLoginService<User>
@@ -88,6 +88,11 @@ class ClassicLoginConfigTest : MvcTest() {
         mockMvc.perform(
             get("/mine")
                 .session(session)
+        )
+            .andExpect(status().isOk)
+
+        mockMvc.perform(
+            get("/mine", user)
         )
             .andExpect(status().isOk)
     }

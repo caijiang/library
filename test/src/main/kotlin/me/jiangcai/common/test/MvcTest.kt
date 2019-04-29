@@ -154,7 +154,7 @@ abstract class MvcTest : CommonTest() {
      * @return new Builder
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    protected fun buildMockMVC(builder: DefaultMockMvcBuilder): DefaultMockMvcBuilder {
+    protected open fun buildMockMVC(builder: DefaultMockMvcBuilder): DefaultMockMvcBuilder {
         return builder
     }
 
