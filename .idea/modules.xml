@@ -24,6 +24,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/logging.iml" filepath="$PROJECT_DIR$/.idea/modules/logging.iml" group="library/logging" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/logging/logging_main.iml" filepath="$PROJECT_DIR$/.idea/modules/logging/logging_main.iml" group="library/logging" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/logging/logging_test.iml" filepath="$PROJECT_DIR$/.idea/modules/logging/logging_test.iml" group="library/logging" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/qr.iml" filepath="$PROJECT_DIR$/.idea/modules/qr.iml" group="library/qr" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/qr/qr_main.iml" filepath="$PROJECT_DIR$/.idea/modules/qr/qr_main.iml" group="library/qr" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/qr/qr_test.iml" filepath="$PROJECT_DIR$/.idea/modules/qr/qr_test.iml" group="library/qr" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource.iml" group="library/resource" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource_main.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource_main.iml" group="library/resource" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/resource/resource_test.iml" filepath="$PROJECT_DIR$/.idea/modules/resource/resource_test.iml" group="library/resource" />

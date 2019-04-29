@@ -28,6 +28,8 @@
       <module name="logging_main" target="1.8" />
       <module name="logging_test" target="1.8" />
       <module name="logging_testFixtures" target="1.8" />
+      <module name="qr_main" target="1.8" />
+      <module name="qr_test" target="1.8" />
       <module name="resource_main" target="1.8" />
       <module name="resource_test" target="1.8" />
       <module name="resource_testFixtures" target="1.8" />

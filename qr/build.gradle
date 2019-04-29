@@ -1,0 +1,17 @@
+group 'me.jiangcai.common'
+version '1.0.0-SNAPSHOT'
+
+dependencies {
+    compile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
+    compile "com.google.zxing:javase:3.2.1"
+    compileOnly "javax:javaee-api:$javaee_version"
+//    compile group: 'org.springframework', name: 'spring-aspects', version: '4.3.8.RELEASE'
+
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
+//    testCompile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+    testCompile project(':test')
+
+}
