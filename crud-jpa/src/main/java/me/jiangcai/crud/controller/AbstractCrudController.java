@@ -110,7 +110,7 @@ public abstract class AbstractCrudController<T extends CrudFriendly<ID>, ID exte
     @PutMapping("/{id}/{name}")
     @Transactional
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void modifyOne(@PathVariable ID id, @PathVariable String name, @RequestBody Object data) {
+    public void modifyOne(@PathVariable ID id, @PathVariable String name, @RequestBody(required = false) Object data) {
         T entity = entityManager.find(currentClass(), id);
         if (entity == null)
             throw new CrudNotFoundException();

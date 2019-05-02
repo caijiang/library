@@ -268,6 +268,16 @@ public class AbstractCrudControllerTest extends BaseTest {
         assertThat(testItem().getDate1())
                 .isEqualToIgnoringMillis(date1);
 
+        // 支持修改成空
+        mockMvc.perform(
+                put("/items/1/date1")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new SimpleDateFormat("\"yyyy-MM-dd HH:mm:ss\"").format(date1))
+        )
+                .andExpect(status().isAccepted());
+        assertThat(testItem().getDate1())
+                .isNull();
+
     }
 
     private Item testItem() {
