@@ -96,4 +96,20 @@ abstract class Login(
     override fun isAccountNonExpired(): Boolean = enabled
 
     override fun isAccountNonLocked(): Boolean = enabled
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Login) return false
+
+        if (id != other.id) return false
+        if (username != other.username) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id?.hashCode() ?: 0
+        result = 31 * result + (username?.hashCode() ?: 0)
+        return result
+    }
 }
