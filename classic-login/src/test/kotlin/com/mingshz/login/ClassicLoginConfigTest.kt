@@ -11,6 +11,7 @@ import org.springframework.mock.web.MockHttpSession
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.web.util.NestedServletException
 import java.time.temporal.ChronoUnit
 
 /**
@@ -24,6 +25,90 @@ class ClassicLoginConfigTest : ClassicMvcTest() {
     private lateinit var classicLoginService: ClassicLoginService<User>
     @Autowired
     private lateinit var applicationContext: ApplicationContext
+
+    @Test
+    fun changePassword() {
+        val u = User()
+        u.username = randomMobile()
+        val rawPassword = randomMobile()
+        val user = classicLoginService.newLogin(u, rawPassword)
+
+        val session = mockMvc.perform(
+            post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsBytes(
+                        mapOf(
+                            "username" to u.username,
+                            "password" to rawPassword
+                        )
+                    )
+                )
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(u.username))
+            .andReturn()
+            .request
+            .session as MockHttpSession
+
+        mockMvc.perform(
+            put("/password")
+                .session(session)
+        )
+            .andExpect(status().is4xxClientError)
+
+        val newPassword = randomMobile()
+        try {
+            mockMvc.perform(
+                put("/password")
+                    .session(session)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsBytes(
+                            mapOf(
+                                "originPassword" to "1",
+                                "newPassword" to newPassword
+                            )
+                        )
+                    )
+            )
+                .andExpect(status().is4xxClientError)
+        } catch (ex: NestedServletException) {
+
+        }
+
+        mockMvc.perform(
+            put("/password")
+                .session(session)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsBytes(
+                        mapOf(
+                            "originPassword" to rawPassword,
+                            "newPassword" to newPassword
+                        )
+                    )
+                )
+        )
+            .andExpect(status().isAccepted)
+
+
+
+        mockMvc.perform(
+            post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsBytes(
+                        mapOf(
+                            "username" to u.username,
+                            "password" to newPassword
+                        )
+                    )
+                )
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(u.username))
+    }
 
     @Test
     fun go() {

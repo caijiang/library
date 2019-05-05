@@ -55,4 +55,13 @@ interface ClassicLoginService<T : Login> : UserDetailsService,
         expireLong: Long = -1,
         uriBuilder: StringBuilder? = null
     ): String
+
+    /**
+     * 修改密码
+     * @param loginId 用户id
+     * @param originPassword 原明文密码
+     * @param newPassword 新原文密码
+     */
+    @Transactional
+    fun changePassword(loginId: Long, originPassword: String, newPassword: String)
 }

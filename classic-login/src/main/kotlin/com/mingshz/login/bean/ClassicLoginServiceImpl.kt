@@ -111,4 +111,12 @@ open class ClassicLoginServiceImpl<T : Login>(
         }
         return (tk.target as T?)!!
     }
+
+    override fun changePassword(loginId: Long, originPassword: String, newPassword: String) {
+        val login = findLogin(loginId)
+        if (!classicPasswordEncoder.matches(originPassword, login.password))
+            throw IllegalArgumentException("密码不正确。")
+
+        login.password = classicPasswordEncoder.encode(newPassword)
+    }
 }

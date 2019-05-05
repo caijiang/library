@@ -5,7 +5,13 @@ import org.springframework.http.MediaType
 import java.lang.annotation.Inherited
 
 /**
- * 启用经典身份系统
+ * 启用经典身份系统，提供以下功能:
+ *
+ * 1. 提供bean [ClassicLoginService]
+ * 1. 基于特定URI的用户名密码登录系统
+ * 1. 基于特定token登录的快速登录系统,参考[ClassicLoginService.requestToken]
+ * 1. 提供方法级别的安全保护
+ * 1. 提供密码修改PUT /password
  * @author CJ
  */
 @Suppress("unused")
