@@ -28,6 +28,34 @@
       <module name="logging_main" target="1.8" />
       <module name="logging_test" target="1.8" />
       <module name="logging_testFixtures" target="1.8" />
+      <module name="me.jiangcai.common-business-safe_main" target="1.8" />
+      <module name="me.jiangcai.common-business-safe_test" target="1.8" />
+      <module name="me.jiangcai.common-classic-login_main" target="1.8" />
+      <module name="me.jiangcai.common-classic-login_test" target="1.8" />
+      <module name="me.jiangcai.common-crud-jpa_main" target="1.8" />
+      <module name="me.jiangcai.common-crud-jpa_test" target="1.8" />
+      <module name="me.jiangcai.common-ext_main" target="1.8" />
+      <module name="me.jiangcai.common-ext_test" target="1.8" />
+      <module name="me.jiangcai.common-jdbc_main" target="1.8" />
+      <module name="me.jiangcai.common-jdbc_test" target="1.8" />
+      <module name="me.jiangcai.common-jpa_main" target="1.8" />
+      <module name="me.jiangcai.common-jpa_test" target="1.8" />
+      <module name="me.jiangcai.common-logging_main" target="1.8" />
+      <module name="me.jiangcai.common-logging_test" target="1.8" />
+      <module name="me.jiangcai.common-qr_main" target="1.8" />
+      <module name="me.jiangcai.common-qr_test" target="1.8" />
+      <module name="me.jiangcai.common-resource_main" target="1.8" />
+      <module name="me.jiangcai.common-resource_test" target="1.8" />
+      <module name="me.jiangcai.common-system-string_main" target="1.8" />
+      <module name="me.jiangcai.common-system-string_test" target="1.8" />
+      <module name="me.jiangcai.common-test_main" target="1.8" />
+      <module name="me.jiangcai.common-test_test" target="1.8" />
+      <module name="me.jiangcai.common-thymeleaf-view_main" target="1.8" />
+      <module name="me.jiangcai.common-thymeleaf-view_test" target="1.8" />
+      <module name="me.jiangcai.common-upgrade_main" target="1.8" />
+      <module name="me.jiangcai.common-upgrade_test" target="1.8" />
+      <module name="me.jiangcai.common-wechat-login_main" target="1.8" />
+      <module name="me.jiangcai.common-wechat-login_test" target="1.8" />
       <module name="qr_main" target="1.8" />
       <module name="qr_test" target="1.8" />
       <module name="resource_main" target="1.8" />

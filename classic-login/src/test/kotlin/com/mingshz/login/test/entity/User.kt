@@ -11,6 +11,6 @@ import javax.persistence.Entity
 @Entity
 class User : Login() {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        return Collections.emptyNavigableSet()
+        return Collections.emptyList()
     }
 }

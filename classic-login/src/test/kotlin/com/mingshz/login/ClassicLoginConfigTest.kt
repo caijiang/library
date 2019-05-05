@@ -70,7 +70,7 @@ class ClassicLoginConfigTest : ClassicMvcTest() {
         val session = mockMvc.perform(
             get(uriBuilder.toString())
         )
-            .andExpect(status().isForbidden)
+            .andExpect(status().isUnauthorized)
             .andReturn()
             .request
             .session
@@ -95,6 +95,13 @@ class ClassicLoginConfigTest : ClassicMvcTest() {
             get("/mine", user)
         )
             .andExpect(status().isOk)
+
+        // 没登录给 401 权限不足给  403
+        mockMvc.perform(
+            get("/advancedMine", user)
+        )
+            .andExpect(status().isForbidden)
+
     }
 
 }

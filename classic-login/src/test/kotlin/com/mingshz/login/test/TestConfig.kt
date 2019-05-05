@@ -1,13 +1,10 @@
 package com.mingshz.login.test
 
 import com.mingshz.login.EnableClassicLogin
-import com.mingshz.login.LoginDelegate
-import com.mingshz.login.test.beans.SecureControllerImpl
-import com.mingshz.login.test.beans.TestLoginDelegate
 import me.jiangcai.common.jpa.EnableJpa
 import me.jiangcai.common.jpa.JpaPackageScanner
 import org.springframework.context.annotation.AdviceMode
-import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.transaction.annotation.EnableTransactionManagement
@@ -25,14 +22,14 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @EnableJpa(
     useH2TempDataSource = true
 )
-//@ComponentScan("com.mingshz.login.beans")
+@ComponentScan("com.mingshz.login.test.beans")
 @EnableWebMvc
 open class TestConfig : JpaPackageScanner {
-    @Bean
-    open fun loginDelegate(): LoginDelegate = TestLoginDelegate()
-
-    @Bean
-    open fun secureController(): SecureControllerImpl = SecureControllerImpl()
+//    @Bean
+//    open fun loginDelegate(): MyLoginDelegate = TestLoginDelegate()
+//
+//    @Bean
+//    open fun secureController(): SecureControllerImpl = SecureControllerImpl(loginDelegate())
 
     override fun addJpaPackage(prefix: String, set: MutableSet<String>) {
         set.add("com.mingshz.login.test.entity")

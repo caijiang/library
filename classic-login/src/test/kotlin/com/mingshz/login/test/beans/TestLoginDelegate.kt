@@ -1,16 +1,23 @@
 package com.mingshz.login.test.beans
 
-import com.mingshz.login.LoginDelegate
 import com.mingshz.login.entity.Login
+import com.mingshz.login.test.MyLoginDelegate
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
+import org.springframework.stereotype.Service
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 /**
  * @author CJ
  */
-class TestLoginDelegate : LoginDelegate {
+@Service
+open class TestLoginDelegate : MyLoginDelegate {
+
+    //    @PreAuthorize("hasAnyRole('ROOT')")
+    override fun wellDone() {
+    }
+
     override fun authenticationSuccess(
         request: HttpServletRequest,
         response: HttpServletResponse,

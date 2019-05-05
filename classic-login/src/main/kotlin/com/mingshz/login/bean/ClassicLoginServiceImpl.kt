@@ -21,7 +21,7 @@ import javax.persistence.PersistenceContext
  */
 @Suppress("UNCHECKED_CAST")
 @Service
-class ClassicLoginServiceImpl<T : Login>(
+open class ClassicLoginServiceImpl<T : Login>(
     @Autowired
     private val classicPasswordEncoder: PasswordEncoder
 ) : ClassicLoginService<T> {

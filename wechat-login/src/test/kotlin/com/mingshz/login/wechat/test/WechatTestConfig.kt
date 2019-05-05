@@ -2,12 +2,7 @@ package com.mingshz.login.wechat.test
 
 import com.mingshz.login.CustomSecurity
 import com.mingshz.login.EnableClassicLogin
-import com.mingshz.login.LoginDelegate
-import com.mingshz.login.test.beans.SecureControllerImpl
-import com.mingshz.login.test.beans.TestLoginDelegate
 import com.mingshz.login.wechat.WechatLoginConfig
-import me.jiangcai.common.jpa.EnableJpa
-import me.jiangcai.common.jpa.JpaPackageScanner
 import me.jiangcai.wx.test.WeixinTestConfig
 import org.springframework.context.annotation.*
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -30,6 +25,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @EnableJpa(
     useH2TempDataSource = true
 )
+@ComponentScan("com.mingshz.login.test.beans")
 @EnableWebMvc
 @Import(WechatLoginConfig::class, WeixinTestConfig::class)
 open class WechatTestConfig : JpaPackageScanner, CustomSecurity {
@@ -47,11 +43,11 @@ open class WechatTestConfig : JpaPackageScanner, CustomSecurity {
     @Bean
     open fun myWeixinPublicAccount(): MyWeixinPublicAccount = MyWeixinPublicAccount()
 
-    @Bean
-    open fun loginDelegate(): LoginDelegate = TestLoginDelegate()
-
-    @Bean
-    open fun secureController(): SecureControllerImpl = SecureControllerImpl()
+//    @Bean
+//    open fun loginDelegate(): LoginDelegate = TestLoginDelegate()
+//
+//    @Bean
+//    open fun secureController(): SecureControllerImpl = SecureControllerImpl()
 
     @Bean
     open fun bindController(): BindController = BindController()
