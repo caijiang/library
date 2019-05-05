@@ -2,10 +2,13 @@ package com.mingshz.login.wechat.controller
 
 import com.mingshz.login.entity.Login
 import com.mingshz.login.wechat.WechatLoginService
+import com.mingshz.login.wechat.WechatUserLoginEvent
+import com.mingshz.login.wechat.toWechatId
 import me.jiangcai.wx.model.WeixinUserDetail
 import me.jiangcai.wx.standard.entity.StandardWeixinUser
 import me.jiangcai.wx.standard.entity.support.AppIdOpenID
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,11 +31,10 @@ import javax.servlet.http.HttpSession
 //@PreAuthorize("permitAll()")
 open class WechatController(
     @Autowired
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    @Autowired
     private val wechatLoginService: WechatLoginService
 ) {
-//
-//    @Autowired
-//    private lateinit var wechatLoginService: WechatLoginService
 
     companion object {
         /**
@@ -58,7 +60,10 @@ open class WechatController(
     ): RedirectView {
         return when {
             id == null -> RedirectView("/wechat/authCore?url=${URLEncoder.encode(url, "UTF-8")}")
-            login == null -> RedirectView("/wechat/authLogin?url=${URLEncoder.encode(url, "UTF-8")}")
+            login == null -> {
+                applicationEventPublisher.publishEvent(WechatUserLoginEvent(id))
+                RedirectView("/wechat/authLogin?url=${URLEncoder.encode(url, "UTF-8")}")
+            }
             else -> RedirectView(url)
         }
     }
@@ -69,12 +74,14 @@ open class WechatController(
         @AuthenticationPrincipal
         login: Login?, detail: WeixinUserDetail, url: String, session: HttpSession
     ): RedirectView {
-        session.setAttribute(SessionKeyForAppIdOpenID, AppIdOpenID(detail.appId, detail.openId))
+        session.setAttribute(SessionKeyForAppIdOpenID, detail.toWechatId())
 
         wechatLoginService.requireSave(detail)
 
-        if (login == null)
+        if (login == null) {
+            applicationEventPublisher.publishEvent(WechatUserLoginEvent(detail.toWechatId()))
             return RedirectView("/wechat/authLogin?url=${URLEncoder.encode(url, "UTF-8")}")
+        }
         return RedirectView(url)
     }
 

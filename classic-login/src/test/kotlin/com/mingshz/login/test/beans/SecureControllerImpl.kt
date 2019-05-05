@@ -23,6 +23,7 @@ open class SecureControllerImpl(
     }
 
     @GetMapping("/advancedMine")
+//    @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseBody
     fun advancedMine(@AuthenticationPrincipal user: User?): String? {
         myService.wellDone()
