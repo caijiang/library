@@ -3,6 +3,8 @@ package com.mingshz.login.wechat.test
 import com.mingshz.login.CustomSecurity
 import com.mingshz.login.EnableClassicLogin
 import com.mingshz.login.wechat.WechatLoginConfig
+import me.jiangcai.common.jpa.EnableJpa
+import me.jiangcai.common.jpa.JpaPackageScanner
 import me.jiangcai.wx.test.WeixinTestConfig
 import org.springframework.context.annotation.*
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
