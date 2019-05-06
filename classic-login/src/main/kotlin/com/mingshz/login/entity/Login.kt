@@ -12,6 +12,7 @@ import javax.persistence.*
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Table(uniqueConstraints = [UniqueConstraint(columnNames = ["username"]), UniqueConstraint(columnNames = ["mobile"])])
 abstract class Login(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
