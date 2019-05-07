@@ -2,6 +2,7 @@ package com.mingshz.login.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import me.jiangcai.common.ext.Constant
+import me.jiangcai.crud.CrudFriendly
 import org.springframework.security.core.userdetails.UserDetails
 import java.time.LocalDateTime
 import javax.persistence.*
@@ -16,7 +17,7 @@ import javax.persistence.*
 abstract class Login(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    private var id: Long? = null,
 
     /**
      * 用户名
@@ -69,7 +70,9 @@ abstract class Login(
      */
     @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
     var createTime: LocalDateTime = LocalDateTime.now()
-) : UserDetails {
+) : UserDetails, CrudFriendly<Long> {
+
+    override fun getId(): Long? = id
 
 
     override fun getUsername(): String? {

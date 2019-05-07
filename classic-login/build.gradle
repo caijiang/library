@@ -7,6 +7,7 @@ dependencies {
     kapt "org.hibernate:hibernate-jpamodelgen:$hibernate_version"
     compileOnly "javax:javaee-api:$javaee_version"
     api project(':ext')
+    api project(':crud-jpa')
     api project(':jpa')
     compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.0.4.RELEASE'
 //    compile group: 'org.springframework.security', name: 'spring-security-aspects', version: '4.0.4.RELEASE'
