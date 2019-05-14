@@ -3,6 +3,9 @@ version '1.0.0-SNAPSHOT'
 
 dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+    compileOnly group: 'org.springframework', name: 'spring-context', version: '4.3.8.RELEASE'
+    compileOnly group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
 
+    testCompile project(':test')
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
