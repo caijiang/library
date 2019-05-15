@@ -36,6 +36,7 @@ internal class JpaConfig : ImportBeanDefinitionRegistrar, Ordered {
                 .forEach { it.addJpaPackage(prefix, ps) }
 //            println(ps)
             // attributes 里是 [AnnotationAttributes]
+            ps.add("me.jiangcai.common.jpa.type")
 
 //            registry.registerBeanDefinition()
             val emfDefinition = RootBeanDefinition()
