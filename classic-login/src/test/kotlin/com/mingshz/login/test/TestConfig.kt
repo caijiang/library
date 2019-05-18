@@ -1,6 +1,7 @@
 package com.mingshz.login.test
 
 import com.mingshz.login.EnableClassicLogin
+import com.mingshz.login.test.entity.User
 import me.jiangcai.common.jpa.EnableJpa
 import me.jiangcai.common.jpa.JpaPackageScanner
 import org.springframework.context.annotation.AdviceMode
@@ -17,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @EnableTransactionManagement(mode = AdviceMode.PROXY)
 @EnableAspectJAutoProxy
 @EnableClassicLogin(
-    loginClassName = "com.mingshz.login.test.entity.User"
+    loginClass = User::class
 )
 @EnableJpa(
     useH2TempDataSource = true

@@ -5,10 +5,13 @@ import me.jiangcai.crud.BaseTest;
 import me.jiangcai.crud.env.entity.Item;
 import org.junit.Test;
 import org.mockito.internal.matchers.StartsWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Resource;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,11 +28,19 @@ public class AbstractCrudControllerTest extends BaseTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
+    @Resource
+    private PlatformTransactionManager transactionManager;
 
     @Test
     public void go() throws Exception {
+        new TransactionTemplate(transactionManager)
+                .execute(status -> {
+                    //noinspection JpaQlInspection
+                    return entityManager.createQuery("delete from Item").executeUpdate();
+                });
+
         // 这个应该还不存在
         mockMvc.perform(get("/items/1"))
                 .andExpect(status().isNotFound());

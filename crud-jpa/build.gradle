@@ -13,6 +13,8 @@ lombok { // optional: values below are the defaults
 
 dependencies {
     compileOnly "javax:javaee-api:$javaee_version"
+    compile project(':ext')
+    compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.0.4.RELEASE'
     compile group: 'org.springframework', name: 'spring-tx', version: '4.3.8.RELEASE'
     compile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
@@ -23,6 +25,8 @@ dependencies {
 //    compileOnly 'org.projectlombok:lombok:1.18.4'
 
     testApi project(':test')
+    testApi project(':jpa')
+    testApi project(':classic-login')
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
     testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
     testRuntime group: 'org.springframework', name: 'spring-aspects', version: '4.3.8.RELEASE'
@@ -30,3 +34,8 @@ dependencies {
 }
 
 apply plugin: 'java'
+apply plugin: 'kotlin-allopen'
+
+allOpen {
+    annotation("me.jiangcai.common.ext.annotations.AllOpenClass")
+}

@@ -1,8 +1,10 @@
 package com.mingshz.login
 
+import com.mingshz.login.entity.Login
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import java.lang.annotation.Inherited
+import kotlin.reflect.KClass
 
 /**
  * 启用经典身份系统，提供以下功能:
@@ -25,7 +27,7 @@ annotation class EnableClassicLogin(
     /**
      * 额外载入的配置类
      */
-    val loginExtraConfigClasses: Array<String> = [],
+    val loginExtraConfigClasses: Array<KClass<*>> = [],
     /**
      * 额外可载入[AuthenticationType]的配置类名
      */
@@ -38,7 +40,7 @@ annotation class EnableClassicLogin(
     /**
      * 启用经典登录的实体类全限定名称
      */
-    val loginClassName: String,
+    val loginClass: KClass<out Login>,
     /**
      * 提供登录的uri
      */

@@ -1,5 +1,6 @@
 package com.mingshz.login
 
+import com.mingshz.login.entity.Login
 import me.jiangcai.common.jpa.JpaPackageScanner
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.RootBeanDefinition
@@ -23,7 +24,7 @@ internal class ClassicLoginConfig : ImportBeanDefinitionRegistrar {
         /**
          * 启用经典登录的实体类全限定名称
          */
-        var loginClassName: String? = null
+        var loginClass: Class<out Login>? = null
         /**
          * 提供登录的uri
          */
@@ -73,7 +74,8 @@ internal class ClassicLoginConfig : ImportBeanDefinitionRegistrar {
         data["loginRequestContentType"]?.let {
             loginRequestContentType = it.toString()
         }
-        loginClassName = data["loginClassName"].toString()
+        @Suppress("UNCHECKED_CAST")
+        loginClass = Class.forName(data["loginClass"].toString().removePrefix("class ")) as Class<out Login>?
 
         registry.registerBean(ClassicLoginConfigCore::class.java)
 
@@ -81,7 +83,7 @@ internal class ClassicLoginConfig : ImportBeanDefinitionRegistrar {
         registry.registerBean(PasswordConfig::class.java)
         data["loginExtraConfigClasses"]?.let { list ->
             (list as Array<*>).forEach {
-                registry.registerBean(it.toString())
+                registry.registerBean(it.toString().removePrefix("class "))
             }
         }
     }

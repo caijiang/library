@@ -39,14 +39,14 @@ open class ClassicLoginServiceImpl<T : Login>(
     private lateinit var entityManager: EntityManager
 
     override fun findLogin(id: Long): T {
-        val type: Class<T> = Class.forName(ClassicLoginConfig.loginClassName!!) as Class<T>
+        val type: Class<T> = ClassicLoginConfig.loginClass as Class<T>
         return entityManager.find(type, id) ?: throw UsernameNotFoundException("can not find $id")
     }
 
     override fun loadUserByUsername(username: String?): T {
         if (username.isNullOrEmpty())
             throw UsernameNotFoundException("null username")
-        val type: Class<T> = Class.forName(ClassicLoginConfig.loginClassName!!) as Class<T>
+        val type: Class<T> = ClassicLoginConfig.loginClass as Class<T>
 
         val cb = entityManager.criteriaBuilder
         val cq = cb.createQuery(type)

@@ -2,7 +2,9 @@ package com.mingshz.login.wechat.test
 
 import com.mingshz.login.CustomSecurity
 import com.mingshz.login.EnableClassicLogin
+import com.mingshz.login.test.entity.User
 import com.mingshz.login.wechat.WechatLoginConfig
+import com.mingshz.login.wechat.WechatLoginConfigPrefix
 import me.jiangcai.common.jpa.EnableJpa
 import me.jiangcai.common.jpa.JpaPackageScanner
 import me.jiangcai.wx.test.WeixinTestConfig
@@ -19,8 +21,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @Configuration
 //@PropertySource("classpath:/test_wx.properties")
 @EnableClassicLogin(
-    loginClassName = "com.mingshz.login.test.entity.User",
-    loginExtraConfigClasses = ["com.mingshz.login.wechat.WechatLoginConfigPrefix"]
+    loginClass = User::class,
+    loginExtraConfigClasses = [WechatLoginConfigPrefix::class]
 )
 @EnableTransactionManagement(mode = AdviceMode.PROXY)
 @EnableAspectJAutoProxy
