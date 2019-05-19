@@ -7,6 +7,7 @@ dependencies {
     kapt "org.hibernate:hibernate-jpamodelgen:$hibernate_version"
     compileOnly "javax:javaee-api:$javaee_version"
     api project(':classic-login')
+    api project(':crud-jpa')
     testApi project(':classic-login').sourceSets.test.output
     api project(':jpa')
     compile "me.jiangcai.wx:weixin-web:2.3.0-SNAPSHOT"
