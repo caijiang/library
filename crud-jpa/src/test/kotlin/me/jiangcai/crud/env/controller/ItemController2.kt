@@ -8,6 +8,7 @@ import me.jiangcai.crud.row.FieldBuilder
 import me.jiangcai.crud.row.FieldDefinition
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
+import java.util.*
 
 /**
  * 权限定义应该相对简单些
@@ -28,7 +29,11 @@ class ItemController2 : CrudController<Item, Long, Item>(
         delete = Right.WithRoles("D")
     )
 ) {
-    override fun listFields(builder: FieldBuilder<Item>): List<FieldDefinition<Item>> {
+    override fun listFields(
+        principal: Any?,
+        locale: Locale,
+        builder: FieldBuilder<Item>
+    ): List<FieldDefinition<Item>> {
         return listOf(
 //            Fields.asBasic("id")
 //            , Fields.asBasic("name")

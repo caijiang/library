@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.ParameterizedType
 import java.net.URI
 import java.net.URISyntaxException
+import java.util.*
 import javax.annotation.Resource
 import javax.persistence.EntityManager
 import javax.persistence.NoResultException
@@ -51,17 +52,8 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     protected val rightTable: RightTable = RightTable()
 ) {
     // 可开放接口
-    /**
-     * 自定义修改的方法
-     * 如果采用了自定义的修改，相关事件会继续发布，但是[postUpdate]则不会因此而得到运行。
-     *
-     * @param entity 实体
-     * @param name   字段名称
-     * @param data   原始数据
-     * @return 是否支持自定义修改,如果支持的话，默认操作则不会继续进行
-     */
-    protected fun customUpdateSupport(principal: Any?, entity: T, name: String, data: Any?): Boolean = false
 
+    // 一些可覆盖的动作。
 
     /**
      * 执行删除动作，可自定义
@@ -72,31 +64,82 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     }
 
     /**
-     * 排序字段，默认没有排序
-     *
-     * @param cb
-     * @param root
-     * @return
+     * 默认没有排序，可通过自定义修改默认排序
+     * @return 默认的排序方式
      */
     protected fun listOrder(cb: CriteriaBuilder, root: Root<T>): List<Order>? {
         return null
     }
 
+    // 可定制视图渲染
+
     /**
+     * @param principal 操作者身份
+     * @param builder 用于构建字段的工具对象
+     * @param locale 来访者当时的语言环境
+     * @return 字段定义表
+     */
+    protected abstract fun listFields(
+        principal: Any?,
+        locale: Locale,
+        builder: FieldBuilder<T>
+    ): List<FieldDefinition<T>>
+
+    /**
+     * @param origin entity对象，切勿改变原始entity对象
+     * @param principal 操作者身份
+     * @param allPathVariables 当时的可用[PathVariable]
+     * @param locale 来访者当时的语言环境
+     * @return 描述这个对象
+     */
+    protected fun describeEntity(
+        principal: Any?,
+        allPathVariables: Map<String, String>,
+        locale: Locale,
+        origin: T
+    ): Any {
+        return origin
+    }
+
+    // 特定的行为模式
+
+    /**
+     * 自定义修改的方法
+     * 如果采用了自定义的修改，相关事件会继续发布，但是[postUpdate]则不会因此而得到运行。
+     *
+     * @param principal 操作者身份
+     * @param allPathVariables 当时的可用[PathVariable]
+     * @param entity 实体
+     * @param name   字段名称
+     * @param data   原始数据
+     * @return 是否支持自定义修改,如果支持的话，默认操作则不会继续进行
+     */
+    protected fun customUpdateSupport(
+        principal: Any?,
+        allPathVariables: Map<String, String>,
+        entity: T,
+        name: String,
+        data: Any?
+    ): Boolean = false
+
+    /**
+     * @param principal 操作者身份
+     * @param allPathVariables 当时的可用[PathVariable]
      * @param request   实际请求
      * @return 查询规格
      * @see RowDefinition.specification
      */
-    protected fun listSpecification(request: WebRequest): Specification<T>? = null
-
-    /**
-     * @return 展示用的
-     */
-    protected abstract fun listFields(builder: FieldBuilder<T>): List<FieldDefinition<T>>
+    protected fun listSpecification(
+        principal: Any?,
+        allPathVariables: Map<String, String>,
+        request: WebRequest
+    ): Specification<T>? = null
 
     /**
      * 准备持久化
      *
+     * @param principal 操作者身份
+     * @param allPathVariables 当时的可用[PathVariable]
      * @param data    准备持久化的数据
      * @param request 其他提交的数据
      * @return 最终要提交的数据
@@ -111,42 +154,20 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     }
 
     /**
-     * 在完成数据更新后的调用钩子，**并非事务被提交之后**
-     * @param entity 刚更新号的实体
-     */
-    protected fun postUpdate(entity: T) {
-    }
-
-    /**
-     * 在完成持久化之后的调用钩子，**并非事务被提交之后**
-     *
-     * @param entity 完成持久化的实体
-     */
-    protected fun postCreate(entity: T) {
-    }
-
-    /**
      * 删除的钩子，**并非事务被提交之后**
      *
-     * @param entity 实体
-     */
-    protected fun prepareDelete(entity: T) {
-
-    }
-
-    /**
-     * @param origin entity对象，切勿改变原始entity对象
      * @param principal 操作者身份
      * @param allPathVariables 当时的可用[PathVariable]
-     * @return 描述这个对象
+     * @param entity 实体
      */
-    protected fun describeEntity(
+    protected fun prepareDelete(
         principal: Any?,
         allPathVariables: Map<String, String>,
-        origin: T
-    ): Any {
-        return origin
+        entity: T
+    ) {
+
     }
+
 
     /**
      * 无论是用于获取单个资源或者是资源列表，都必须确保符合这个谓语。
@@ -164,6 +185,23 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         root: Root<T>
     ): Predicate? = null
 
+    // 事件钩子
+
+    /**
+     * 在完成数据更新后的调用钩子，**并非事务被提交之后**
+     * @param entity 刚更新号的实体
+     */
+    protected fun postUpdate(entity: T) {
+    }
+
+    /**
+     * 在完成持久化之后的调用钩子，**并非事务被提交之后**
+     *
+     * @param entity 完成持久化的实体
+     */
+    protected fun postCreate(entity: T) {
+    }
+
     // 可开放接口
 
     @PersistenceContext
@@ -178,7 +216,9 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     @Transactional(readOnly = true)
     @ResponseBody
     fun getOne(
-        @AuthenticationPrincipal principal: Any?, @PathVariable id: ID
+        @AuthenticationPrincipal principal: Any?
+        , locale: Locale
+        , @PathVariable id: ID
         , @PathVariable allPathVariables: Map<String, String>
     ): Any {
         rightTable.read?.check(SecurityContextHolder.getContext().authentication, principal, id, allPathVariables, null)
@@ -205,7 +245,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
             }
         }
 
-        return describeEntity(principal, allPathVariables, filteredEntity)
+        return describeEntity(principal, allPathVariables, locale, filteredEntity)
     }
 
     //增加一个数据
@@ -249,7 +289,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         (if (rightTable.updateProperty.containsKey(name)) rightTable.updateProperty[name] else rightTable.update)
             ?.check(SecurityContextHolder.getContext().authentication, principal, id, allPathVariables, entity)
 // 允许自定义修改
-        if (customUpdateSupport(principal, entity, name, data)) {
+        if (customUpdateSupport(principal, allPathVariables, entity, name, data)) {
             applicationEventPublisher.publishEvent(EntityUpdateEvent(entity))
             return
         }
@@ -280,6 +320,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     @GetMapping
     fun list(
         @AuthenticationPrincipal principal: Any?, @PathVariable allPathVariables: Map<String, String>
+        , locale: Locale
         , request: WebRequest
     ): RowDefinition<T> {
         rightTable.read?.check(
@@ -296,11 +337,11 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
             }
 
             override fun fields(): List<FieldDefinition<T>> {
-                return listFields(builder)
+                return listFields(principal, locale, builder)
             }
 
             override fun specification(): Specification<T>? {
-                val spec = listSpecification(request)
+                val spec = listSpecification(principal, allPathVariables, request)
                 val read = Specification<T> { root, query, cb ->
                     readablePredicate(principal, allPathVariables, cb, query, root) ?: cb.conjunction()
                 }
@@ -334,7 +375,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
             allPathVariables,
             entity
         )
-        prepareDelete(entity)
+        prepareDelete(principal, allPathVariables, entity)
         customDelete(entity)
         applicationEventPublisher.publishEvent(EntityRemoveEvent(entity))
     }
