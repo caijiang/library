@@ -30,6 +30,8 @@ dependencies {
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
     testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
     testRuntime group: 'org.springframework', name: 'spring-aspects', version: '4.3.8.RELEASE'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
 
 }
 

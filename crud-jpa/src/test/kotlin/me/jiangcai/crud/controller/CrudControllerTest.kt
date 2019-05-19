@@ -4,6 +4,7 @@ import me.jiangcai.crud.BaseTest2
 import me.jiangcai.crud.env.entity.Item
 import me.jiangcai.crud.env.entity2.User
 import org.assertj.core.api.Assertions.assertThat
+import org.hamcrest.number.IsCloseTo
 import org.junit.Test
 import org.mockito.internal.matchers.StartsWith
 import org.springframework.http.MediaType
@@ -11,7 +12,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.annotation.Resource
@@ -281,7 +281,8 @@ class CrudControllerTest : BaseTest2() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.bigDecimal1").value(bigDecimal1.setScale(2, RoundingMode.HALF_UP)))
+            .andExpect(jsonPath("$.bigDecimal1").value(IsCloseTo(bigDecimal1.toDouble(), 0.01)))
+//            .andExpect(jsonPath("$.bigDecimal1").value(bigDecimal1.setScale(0, RoundingMode.HALF_UP)))
 
         val date1 = Date()
         mockMvc.perform(
@@ -301,6 +302,44 @@ class CrudControllerTest : BaseTest2() {
         assertThat(testItem(newOneUri).date1)
             .isNull()
 
+        // 现在开始测试过滤器。
+        // 首先给目标item 一个期望的name
+        val name1 = randomMobile()
+        mockMvc.perform(
+            put("$newOneUri/name", userAsRole("U"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("\"$name1\"")
+        )
+            .andExpect(status().isAccepted)
+
+        mockMvc.perform(
+            get("/items2", userAsRole("R"))
+                .param("filter", "name_$name1")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+
+        mockMvc.perform(
+            get("/items2", userAsRole("R"))
+                .param("filter", "nameSize_0")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(0))
+
+        mockMvc.perform(
+            delete(newOneUri, userAsRole("HELLO"))
+        )
+            .andExpect(status().isForbidden)
+
+        mockMvc.perform(
+            delete(newOneUri, userAsRole("D"))
+        )
+            .andExpect(status().isNoContent)
+
+        mockMvc.perform(
+            get(newOneUri, userAsRole("R"))
+        )
+            .andExpect(status().isNotFound)
     }
 
     private fun userAsRole(role: String): User {

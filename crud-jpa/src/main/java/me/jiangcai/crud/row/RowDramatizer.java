@@ -1,6 +1,7 @@
 package me.jiangcai.crud.row;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kotlin.Pair;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
@@ -13,8 +14,11 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 数据重新定制者
@@ -178,5 +182,30 @@ public interface RowDramatizer {
     default void fetchAndWriteResponse(MethodParameter type, RowDefinition rowDefinition, boolean distinct
             , NativeWebRequest webRequest) throws IOException {
 
+    }
+
+    /**
+     * 默认实现是通过提交请求参数filter进行(可提交多个filter参数)
+     * filter参数的值格式为 <pre>[name]{[_value]}(n)</pre>
+     * 比如 <pre>status_1_2</pre> 表示只要status 为 1或者2；仅仅只有name的filter是会被无视的
+     *
+     * @param request 请求
+     * @return 当前请求的过滤器
+     */
+    default List<Pair<String, List<String>>> queryFilters(NativeWebRequest request) {
+        String[] filters = request.getParameterValues("filter");
+        if (filters == null)
+            return null;
+        return Stream.of(filters)
+                // 用_切分
+                .map(s -> Stream.of(s.split("_"))
+                        .filter(s1 -> s1 != null && s1.length() > 0)
+                        .toArray(String[]::new))
+                // 必须得有2个，第一个是参数，其他的则是选项
+                .filter(strings -> strings.length > 1)
+                // 转换为所需的Pair
+                .map(strings -> new Pair<>(strings[0]
+                        , Arrays.asList(Arrays.copyOfRange(strings, 1, strings.length))))
+                .collect(Collectors.toList());
     }
 }

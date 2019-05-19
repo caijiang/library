@@ -1,5 +1,6 @@
 package me.jiangcai.crud.row;
 
+import kotlin.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -101,6 +102,17 @@ public interface RowService {
      * @param pageable            分页
      * @return 获取相关的字段
      */
+    Page<?> queryFields(RowDefinition rowDefinition, boolean distinct
+            , OrderGenerator customOrderFunction, Pageable pageable, List<Pair<String, List<String>>> filters);
+
+    /**
+     * @param rowDefinition       数据定义
+     * @param distinct            是否唯一
+     * @param customOrderFunction 可选的自定义排序
+     * @param pageable            分页
+     * @return 获取相关的字段
+     */
+    @SuppressWarnings("unused")
     Page<?> queryFields(RowDefinition rowDefinition, boolean distinct
             , OrderGenerator customOrderFunction, Pageable pageable);
 

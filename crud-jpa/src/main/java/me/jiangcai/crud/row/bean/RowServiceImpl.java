@@ -1,16 +1,17 @@
 package me.jiangcai.crud.row.bean;
 
+import kotlin.Pair;
 import lombok.AllArgsConstructor;
-import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.OrderGenerator;
-import me.jiangcai.crud.row.RowDefinition;
-import me.jiangcai.crud.row.RowService;
+import me.jiangcai.crud.modify.PropertyChanger;
+import me.jiangcai.crud.row.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -19,9 +20,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -82,13 +81,16 @@ public class RowServiceImpl implements RowService {
         return new PageImpl<T>(resultList, pageable, entityManager.createQuery(countCq).getSingleResult());
     }
 
+    @Autowired
+    private List<PropertyChanger> changerSet;
+
     @SuppressWarnings("unchecked")
     @Override
     public List<?> queryFields(RowDefinition rowDefinition, boolean distinct
             , OrderGenerator customOrderFunction) {
         final List<FieldDefinition> fieldDefinitions = rowDefinition.fields();
 
-        QueryPair resultPair = smartQuery(rowDefinition, distinct, customOrderFunction, fieldDefinitions);
+        QueryPair resultPair = smartQuery(rowDefinition, distinct, customOrderFunction, fieldDefinitions, null);
         try {
             return entityManager.createQuery(resultPair.dataQuery).getResultList();
         } catch (NoResultException ex) {
@@ -98,12 +100,18 @@ public class RowServiceImpl implements RowService {
     }
 
     @Override
+    public Page<?> queryFields(RowDefinition rowDefinition, boolean distinct, OrderGenerator customOrderFunction
+            , Pageable pageable) {
+        return queryFields(rowDefinition, distinct, customOrderFunction, pageable, null);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public Page<?> queryFields(RowDefinition rowDefinition, boolean distinct,
-                               OrderGenerator customOrderFunction, Pageable pageable) {
+                               OrderGenerator customOrderFunction, Pageable pageable, List<Pair<String, List<String>>> filters) {
         final List<FieldDefinition> fieldDefinitions = rowDefinition.fields();
 
-        QueryPair resultPair = smartQuery(rowDefinition, distinct, customOrderFunction, fieldDefinitions);
+        QueryPair resultPair = smartQuery(rowDefinition, distinct, customOrderFunction, fieldDefinitions, filters);
 
         // 打包成Object[]
         try {
@@ -135,8 +143,69 @@ public class RowServiceImpl implements RowService {
     @SuppressWarnings("unchecked")
     private QueryPair smartQuery(RowDefinition rowDefinition, boolean distinct
             , OrderGenerator customOrderFunction
-            , List<FieldDefinition> fieldDefinitions) {
+            , List<FieldDefinition> fieldDefinitions, List<Pair<String, List<String>>> filters) {
         final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+        // 在这里勾画出它的类型
+        // 装饰器的任务则是读取他们的过滤器
+        // 过滤器跟本身既有的filed 进行组合，组合出可行的过滤器。
+        final Specification filterSpecification;
+        if (filters != null && !filters.isEmpty()) {
+//                组合
+            Map<String, FieldDefinition> mappedDefinitions = new HashMap<>();
+            Set<String> names = filters.stream()
+                    .map(Pair::getFirst)
+                    .collect(Collectors.toSet());
+
+            fieldDefinitions.forEach(fieldDefinition -> {
+                if (names.contains(fieldDefinition.name())) {
+                    mappedDefinitions.put(fieldDefinition.name(), fieldDefinition);
+                }
+            });
+
+            List<Pair<TypeFieldDefinition, Set<Object>>> fs = filters.stream()
+                    // 这次过滤 留下来就是精英了。
+                    .filter(stringListPair -> {
+                        if (!mappedDefinitions.containsKey(stringListPair.getFirst())) {
+                            log.debug("声明了filter 名称" + stringListPair.getFirst() + ",但是映射定义中并未包含。");
+                            return false;
+                        }
+
+                        final FieldDefinition definition = mappedDefinitions.get(stringListPair.getFirst());
+                        if (log.isDebugEnabled() && !(definition instanceof TypeFieldDefinition)) {
+                            log.debug("filter:" + stringListPair.getFirst() + " 所对应的映射定义并未实现TypeFieldDefinition");
+                        }
+                        return definition instanceof TypeFieldDefinition;
+                    })
+                    .map((Function<Pair<String, List<String>>, Pair<TypeFieldDefinition, Set<Object>>>) stringListPair -> {
+                        TypeFieldDefinition def = (TypeFieldDefinition) mappedDefinitions.get(stringListPair.getFirst());
+
+                        return new Pair(def, stringListPair.getSecond()
+                                .stream()
+                                .map(s -> changerSet.stream()
+                                        .filter(propertyChanger -> propertyChanger.support(def.getResultType()))
+                                        .findFirst()
+                                        .orElseThrow(() -> new IllegalStateException("没有找到合适的转换器(PropertyChanger)转换到" + def.getResultType()))
+                                        .change(def.getResultType(), s))
+                                .collect(Collectors.toSet()));
+                    })
+                    .collect(Collectors.toList());
+
+            if (fs.isEmpty()) {
+                filterSpecification = null;
+            } else {
+                filterSpecification = (root, query, cb) -> cb.and(fs.stream()
+                        .map(typeFieldDefinitionSetPair -> {
+                            Expression selection = typeFieldDefinitionSetPair.getFirst().select(cb, query, root);
+
+                            return cb.or(typeFieldDefinitionSetPair.getSecond().stream()
+                                    .map(o -> cb.equal(selection, o)).toArray(Predicate[]::new));
+                        })
+                        .toArray(Predicate[]::new));
+            }
+        } else {
+            filterSpecification = null;
+        }
 //        CriteriaQuery originDataQuery = criteriaBuilder.createQuery();
 //        CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
         QueryPair pair = new QueryPair(criteriaBuilder);
@@ -146,7 +215,7 @@ public class RowServiceImpl implements RowService {
         Root root = pair.dataQuery.from(rowDefinition.entityClass());
         Root countRoot = pair.countQuery.from(rowDefinition.entityClass());
 
-
+        @SuppressWarnings("Convert2Lambda")
         CriteriaQuery dataQuery = pair.dataQuery.multiselect(fieldDefinitions.stream()
                 .map(new Function<FieldDefinition, Selection>() {
                     @Override
@@ -160,9 +229,9 @@ public class RowServiceImpl implements RowService {
                 .collect(Collectors.toList()));
 
         // where
-        dataQuery = where(criteriaBuilder, dataQuery, root, rowDefinition);
+        dataQuery = where(criteriaBuilder, dataQuery, root, rowDefinition, filterSpecification);
         dataQuery = rowDefinition.dataGroup(criteriaBuilder, dataQuery, root);
-        pair.countQuery = where(criteriaBuilder, pair.countQuery, countRoot, rowDefinition);
+        pair.countQuery = where(criteriaBuilder, pair.countQuery, countRoot, rowDefinition, filterSpecification);
         pair.countQuery = rowDefinition.countQuery(criteriaBuilder, pair.countQuery, countRoot);
 
         if (distinct)
@@ -187,12 +256,20 @@ public class RowServiceImpl implements RowService {
     }
 
     private <T> CriteriaQuery<T> where(CriteriaBuilder criteriaBuilder, CriteriaQuery<T> query, Root<?> root
-            , RowDefinition<?> rowDefinition) {
+            , RowDefinition<?> rowDefinition, Specification filterSpecification) {
         final Specification<?> specification = rowDefinition.specification();
-        if (specification == null)
-            return query;
+        if (specification == null) {
+            if (filterSpecification == null)
+                return query;
+            //noinspection unchecked
+            return query.where(filterSpecification.toPredicate(root, query, criteriaBuilder));
+        }
+        if (filterSpecification == null)
+            //noinspection unchecked
+            return query.where(specification.toPredicate((Root) root, query, criteriaBuilder));
+
         //noinspection unchecked
-        return query.where(specification.toPredicate((Root) root, query, criteriaBuilder));
+        return query.where(Specifications.where(specification).and(filterSpecification).toPredicate(root, query, criteriaBuilder));
     }
 
     @AllArgsConstructor

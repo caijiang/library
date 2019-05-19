@@ -3,9 +3,11 @@ package me.jiangcai.crud.controller
 import me.jiangcai.common.ext.annotations.AllOpenClass
 import me.jiangcai.crud.CrudFriendly
 import me.jiangcai.crud.event.EntityAddEvent
+import me.jiangcai.crud.event.EntityRemoveEvent
 import me.jiangcai.crud.event.EntityUpdateEvent
 import me.jiangcai.crud.exception.CrudNotFoundException
 import me.jiangcai.crud.modify.PropertyChanger
+import me.jiangcai.crud.row.FieldBuilder
 import me.jiangcai.crud.row.FieldDefinition
 import me.jiangcai.crud.row.RowDefinition
 import org.springframework.beans.BeanUtils
@@ -36,6 +38,9 @@ import javax.persistence.criteria.*
  * 1. 最高级也是定制程度可以最高的是复写开放出来的 pre-post 方法
  * 2. 略微轻微程度的定制方法是 命名操作并且设计可复写的权限表
  *
+ * ## 过滤器篇
+ * 基本实现参考[me.jiangcai.crud.row.RowDramatizer.queryFilters]
+ *
  * @author CJ
  */
 @AllOpenClass
@@ -45,17 +50,27 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
      */
     protected val rightTable: RightTable = RightTable()
 ) {
+    // 可开放接口
     /**
      * 自定义修改的方法
+     * 如果采用了自定义的修改，相关事件会继续发布，但是[postUpdate]则不会因此而得到运行。
      *
      * @param entity 实体
      * @param name   字段名称
      * @param data   原始数据
      * @return 是否支持自定义修改,如果支持的话，默认操作则不会继续进行
      */
-    protected fun customModifySupport(principal: Any?, entity: T, name: String, data: Any?): Boolean = false
+    protected fun customUpdateSupport(principal: Any?, entity: T, name: String, data: Any?): Boolean = false
 
-    // 可开放接口
+
+    /**
+     * 执行删除动作，可自定义
+     * @param entity 要被删除的实体
+     */
+    protected fun customDelete(entity: T) {
+        entityManager.remove(entity)
+    }
+
     /**
      * 排序字段，默认没有排序
      *
@@ -77,7 +92,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     /**
      * @return 展示用的
      */
-    protected abstract fun listFields(): List<FieldDefinition<T>>
+    protected abstract fun listFields(builder: FieldBuilder<T>): List<FieldDefinition<T>>
 
     /**
      * 准备持久化
@@ -86,7 +101,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
      * @param request 其他提交的数据
      * @return 最终要提交的数据
      */
-    protected fun preparePersist(
+    protected fun prepareCreate(
         principal: Any?,
         allPathVariables: Map<String, String>,
         data: X,
@@ -96,11 +111,27 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     }
 
     /**
+     * 在完成数据更新后的调用钩子，**并非事务被提交之后**
+     * @param entity 刚更新号的实体
+     */
+    protected fun postUpdate(entity: T) {
+    }
+
+    /**
      * 在完成持久化之后的调用钩子，**并非事务被提交之后**
      *
      * @param entity 完成持久化的实体
      */
-    protected fun postPersist(entity: T) {
+    protected fun postCreate(entity: T) {
+    }
+
+    /**
+     * 删除的钩子，**并非事务被提交之后**
+     *
+     * @param entity 实体
+     */
+    protected fun prepareDelete(entity: T) {
+
     }
 
     /**
@@ -186,7 +217,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         , @RequestBody postData: X, @PathVariable allPathVariables: Map<String, String>
         , request: WebRequest
     ): ResponseEntity<*> {
-        val result = preparePersist(principal, allPathVariables, postData, request)
+        val result = prepareCreate(principal, allPathVariables, postData, request)
         rightTable.create?.check(
             SecurityContextHolder.getContext().authentication,
             principal,
@@ -196,7 +227,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         )
         entityManager.persist(result)
         entityManager.flush()
-        postPersist(result)
+        postCreate(result)
         val id = result.id
         applicationEventPublisher.publishEvent(EntityAddEvent<T>(result))
         return ResponseEntity
@@ -218,7 +249,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         (if (rightTable.updateProperty.containsKey(name)) rightTable.updateProperty[name] else rightTable.update)
             ?.check(SecurityContextHolder.getContext().authentication, principal, id, allPathVariables, entity)
 // 允许自定义修改
-        if (customModifySupport(principal, entity, name, data)) {
+        if (customUpdateSupport(principal, entity, name, data)) {
             applicationEventPublisher.publishEvent(EntityUpdateEvent(entity))
             return
         }
@@ -229,16 +260,17 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         val newValue = changerSet.stream()
             .filter { propertyChanger -> propertyChanger.support(pd.propertyType) }
             .findFirst()
-            .orElseThrow { IllegalStateException("not supported.") }
+            .orElseThrow { IllegalStateException("not supported field:$name for modify.") }
             .change(pd.propertyType, data)
 
         try {
             pd.writeMethod.invoke(entity, newValue)
         } catch (e: IllegalAccessException) {
-            throw IllegalStateException("not supported.", e)
+            throw IllegalStateException("not supported field:$name for modify.", e)
         } catch (e: InvocationTargetException) {
-            throw IllegalStateException("not supported.", e)
+            throw IllegalStateException("not supported field:$name for modify.", e)
         }
+        postUpdate(entity)
 
         // 发布事件
         applicationEventPublisher.publishEvent(EntityUpdateEvent(entity))
@@ -257,13 +289,14 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
             allPathVariables,
             null
         )
+        val builder = FieldBuilder(currentClass())
         return object : RowDefinition<T> {
             override fun entityClass(): Class<T> {
                 return currentClass()
             }
 
             override fun fields(): List<FieldDefinition<T>> {
-                return listFields()
+                return listFields(builder)
             }
 
             override fun specification(): Specification<T>? {
@@ -284,6 +317,26 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
 //                return listGroup(cb, query, root)
 //            }
         }
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
+    fun deleteOne(
+        @AuthenticationPrincipal principal: Any?, @PathVariable id: ID
+        , @PathVariable allPathVariables: Map<String, String>
+    ) {
+        val entity = entityManager.find(currentClass(), id) ?: throw CrudNotFoundException()
+        rightTable.delete?.check(
+            SecurityContextHolder.getContext().authentication,
+            principal,
+            id,
+            allPathVariables,
+            entity
+        )
+        prepareDelete(entity)
+        customDelete(entity)
+        applicationEventPublisher.publishEvent(EntityRemoveEvent(entity))
     }
 
 

@@ -1,5 +1,6 @@
 package me.jiangcai.crud.row.bean;
 
+import kotlin.Pair;
 import me.jiangcai.crud.row.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,9 +90,11 @@ public class RowDefinitionHandler implements HandlerMethodReturnValueHandler {
             final int startPosition = dramatizer.queryOffset(webRequest);
             final int size = dramatizer.querySize(webRequest);
 
+            final List<Pair<String, List<String>>> filters = dramatizer.queryFilters(webRequest);
+
             Page<?> page = rowService.queryFields(rowDefinition, distinct,
                     orderGenerator
-                    , new PageRequest(startPosition / size, size));
+                    , new PageRequest(startPosition / size, size), filters);
             dramatizer.writeResponse(page, fieldDefinitions, webRequest);
         }
         mavContainer.setRequestHandled(true);
