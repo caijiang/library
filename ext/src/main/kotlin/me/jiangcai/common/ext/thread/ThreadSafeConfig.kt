@@ -41,7 +41,7 @@ internal open class ThreadSafeConfig(
                     }
 
                 }
-            )
+            )?.excludePathPatterns("/echo/**")
     }
 
 
