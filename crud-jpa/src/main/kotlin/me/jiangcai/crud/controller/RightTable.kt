@@ -10,6 +10,12 @@ data class RightTable(
      */
     val read: Right? = null,
     /**
+     * 如果定义了这个参数，则[read]就不再有任何作用。
+     * * [Pair.first] 表示以列表获取的所需权利
+     * * [Pair.second] 表示以单独获取的所需权利
+     */
+    val readRights: Pair<Right?, Right?>? = null,
+    /**
      * 创建的所需权利
      */
     val create: Right? = null,

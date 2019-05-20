@@ -19,14 +19,14 @@ import java.util.*
 @RequestMapping("/items2")
 class ItemController2 : CrudController<Item, Long, Item>(
     RightTable(
-        read = Right.WithRoles("R"),
-        create = Right.WithRoles("C"),
-        update = Right.WithRoles("U"),
+        read = Right.withRoles("R"),
+        create = Right.withRoles("C"),
+        update = Right.withRoles("U"),
         updateProperty = mapOf(
-            "int2" to Right.WithRoles("U2"),
+            "int2" to Right.withRoles("U2"),
             "byte1" to null
         ),
-        delete = Right.WithRoles("D")
+        delete = Right.withRoles("D")
     )
 ) {
     override fun listFields(

@@ -5,6 +5,7 @@ import me.jiangcai.crud.row.field.fake.FakeCriteriaBuilder
 import me.jiangcai.crud.row.field.fake.FakeCriteriaQuery
 import me.jiangcai.crud.row.field.fake.FakeRoot
 import org.springframework.beans.BeanUtils
+import org.springframework.core.convert.ConversionService
 import org.springframework.http.MediaType
 import java.lang.reflect.InvocationTargetException
 import java.util.function.Function
@@ -22,8 +23,21 @@ typealias ToFormat = (Any?, MediaType?, exportMe: Function<MutableList<Any?>, *>
  * @author CJ
  */
 class FieldBuilder<T>(
-    private val type: Class<T>
+    private val type: Class<T>,
+    private val conversionService: ConversionService
 ) {
+    /**
+     * @return 一个[ConversionService]友好的格式工具
+     */
+    @Suppress("unused")
+    fun formatVia(conversionService: ConversionService = this.conversionService): ToFormat {
+        return { value, _, _ ->
+            if (value == null) null
+            else
+                conversionService.convert(value, String::class.java)
+        }
+    }
+
     /**
      * 直接用实体的字段名称构建
      * @param field 字段名称
@@ -78,7 +92,7 @@ class FieldBuilder<T>(
      * @param format 自定义格式化
      */
     fun <X> forAttribute(
-        attribute: SingularAttribute<T, X>,
+        attribute: SingularAttribute<in T, X>,
         name: String = attribute.name,
         order: Boolean = true,
         format: ToFormat = { input, _, _ -> input }

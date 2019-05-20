@@ -8,6 +8,7 @@ import java.io.Serializable
  * 所需权利
  * @author CJ
  */
+@Suppress("unused")
 interface Right {
     /**
      * 检查权限
@@ -32,19 +33,56 @@ interface Right {
         /**
          * 允许所有的所需权利
          */
-        fun WithPermitAll(): Right? = null
+        fun withPermitAll(): Right? = null
 
         /**
          * 拒绝所有的所需权利
          */
-        fun WithDenyAll(): Right = DenyAllRight()
+        fun withDenyAll(): Right = DenyAllRight()
 
         /**
          * 只要有以上权利即可
          */
-        fun WithRoles(vararg roles: String) = RolesRight(roles)
+        fun withRoles(vararg roles: String): Right = RolesRight(roles)
 
+        /**
+         * 要求非匿名
+         */
+        fun withNonAnonymous(): Right = AnonymousRight(true)
+
+        /**
+         * 要求匿名
+         */
+        fun withAnonymous(): Right = AnonymousRight(false)
     }
+}
+
+/**
+ * 匿名权利
+ */
+class AnonymousRight(
+    /**
+     * 不允许匿名
+     */
+    private val no: Boolean
+) : Right {
+    override fun <ID : Serializable> check(
+        authentication: Authentication?,
+        principal: Any?,
+        id: ID?,
+        allPathVariables: Map<String, String>,
+        entity: Any?
+    ) {
+        if (authentication == null)
+            throw AccessDeniedException("")
+        if (authentication.isAuthenticated && !no) {
+            throw AccessDeniedException("anonymous required, but authenticated.")
+        }
+        if (!authentication.isAuthenticated && no) {
+            throw AccessDeniedException("anonymous required, but authenticated.")
+        }
+    }
+
 }
 
 class RolesRight(

@@ -12,6 +12,7 @@ import me.jiangcai.crud.row.FieldDefinition
 import me.jiangcai.crud.row.RowDefinition
 import org.springframework.beans.BeanUtils
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.core.convert.ConversionService
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.domain.Specifications
 import org.springframework.http.HttpStatus
@@ -210,7 +211,8 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     private lateinit var applicationEventPublisher: ApplicationEventPublisher
     @Resource
     private lateinit var changerSet: List<PropertyChanger>
-
+    @Resource
+    private lateinit var conversionService: ConversionService
 
     @GetMapping(value = ["/{id}"])
     @Transactional(readOnly = true)
@@ -221,7 +223,10 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         , @PathVariable id: ID
         , @PathVariable allPathVariables: Map<String, String>
     ): Any {
-        rightTable.read?.check(SecurityContextHolder.getContext().authentication, principal, id, allPathVariables, null)
+        val right = if (rightTable.readRights != null) rightTable.readRights?.second
+        else rightTable.read
+
+        right?.check(SecurityContextHolder.getContext().authentication, principal, id, allPathVariables, null)
         val type = currentClass()
 
         val entity = entityManager.find<T>(type, id) ?: throw CrudNotFoundException()
@@ -323,14 +328,17 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         , locale: Locale
         , request: WebRequest
     ): RowDefinition<T> {
-        rightTable.read?.check(
+        val right = if (rightTable.readRights != null) rightTable.readRights?.first
+        else rightTable.read
+
+        right?.check(
             SecurityContextHolder.getContext().authentication,
             principal,
             null,
             allPathVariables,
             null
         )
-        val builder = FieldBuilder(currentClass())
+        val builder = FieldBuilder(currentClass(), conversionService)
         return object : RowDefinition<T> {
             override fun entityClass(): Class<T> {
                 return currentClass()
