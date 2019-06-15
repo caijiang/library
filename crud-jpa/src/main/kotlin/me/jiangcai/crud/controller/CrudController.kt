@@ -171,7 +171,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
 
 
     /**
-     * 无论是用于获取单个资源或者是资源列表，都必须确保符合这个谓语。
+     * 任何操作(除了新增)，都必须确保符合这个谓语。
      *
      * @param principal 操作者身份
      * @param allPathVariables 当时的可用[PathVariable]
@@ -231,12 +231,23 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
 
         val entity = entityManager.find<T>(type, id) ?: throw CrudNotFoundException()
 
+        val filteredEntity = readReadableEntity(principal, allPathVariables, entity)
+
+        return describeEntity(principal, allPathVariables, locale, filteredEntity)
+    }
+
+    private fun readReadableEntity(
+        principal: Any?,
+        allPathVariables: Map<String, String>,
+        entity: T
+    ): T {
+        val type = currentClass()
         val cb = entityManager.criteriaBuilder
         val cq = cb.createQuery(type)
         val root = cq.from(type)
 
         val predicate = readablePredicate(principal, allPathVariables, cb, cq, root)
-        val filteredEntity = if (predicate == null) entity
+        return if (predicate == null) entity
         else {
             try {
                 entityManager
@@ -249,8 +260,6 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
                 throw CrudNotFoundException()
             }
         }
-
-        return describeEntity(principal, allPathVariables, locale, filteredEntity)
     }
 
     //增加一个数据
@@ -290,7 +299,8 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
             required = false
         ) data: Any?
     ) {
-        val entity = entityManager.find(currentClass(), id) ?: throw CrudNotFoundException()
+        val e = entityManager.find(currentClass(), id) ?: throw CrudNotFoundException()
+        val entity = readReadableEntity(principal, allPathVariables, e)
         (if (rightTable.updateProperty.containsKey(name)) rightTable.updateProperty[name] else rightTable.update)
             ?.check(SecurityContextHolder.getContext().authentication, principal, id, allPathVariables, entity)
 // 允许自定义修改
@@ -375,7 +385,8 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
         @AuthenticationPrincipal principal: Any?, @PathVariable id: ID
         , @PathVariable allPathVariables: Map<String, String>
     ) {
-        val entity = entityManager.find(currentClass(), id) ?: throw CrudNotFoundException()
+        val e = entityManager.find(currentClass(), id) ?: throw CrudNotFoundException()
+        val entity = readReadableEntity(principal, allPathVariables, e)
         rightTable.delete?.check(
             SecurityContextHolder.getContext().authentication,
             principal,
