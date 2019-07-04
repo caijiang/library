@@ -54,7 +54,19 @@ public class DateTimePropertyChanger extends NullablePC {
         } else if (type == LocalDateTime.class) {
             if (origin instanceof LocalDateTime)
                 return origin;
-            return LocalDateTime.ofInstant(toInstant(origin), ZoneId.systemDefault());
+            try {
+                return LocalDateTime.ofInstant(toInstant(origin), ZoneId.systemDefault());
+            } catch (DateTimeException ex) {
+                try {
+                    return LocalDateTime.from(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").parse(origin.toString()));
+                } catch (DateTimeException ex2) {
+                    try {
+                        return LocalDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(origin.toString()));
+                    } catch (DateTimeParseException ex3) {
+                        return LocalDateTime.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(origin.toString()));
+                    }
+                }
+            }
         } else if (type == LocalDate.class) {
             if (origin instanceof LocalDate)
                 return origin;
