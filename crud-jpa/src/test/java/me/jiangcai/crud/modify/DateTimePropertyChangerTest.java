@@ -18,7 +18,12 @@ public class DateTimePropertyChangerTest {
         LocalDateTime x = (LocalDateTime) c.nonNullChange(LocalDateTime.class, "2019-07-04T19:01:32.580");
         assertThat(x)
                 .isNotNull();
-        System.out.println(x);
+//        System.out.println(x);
+//        aa
+//        System.out.println(String.class.getCanonicalName());
+//        System.out.println(String.class.getSimpleName());
+//        System.out.println(String.class.getName());
+//        System.out.println(String.class.getTypeName());
     }
 
 }

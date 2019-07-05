@@ -60,11 +60,11 @@ public class DateTimePropertyChanger extends NullablePC {
                 try {
                     return LocalDateTime.from(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").parse(origin.toString()));
                 } catch (DateTimeException ex2) {
-                    try {
-                        return LocalDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(origin.toString()));
-                    } catch (DateTimeParseException ex3) {
-                        return LocalDateTime.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(origin.toString()));
-                    }
+//                    try {
+                    return LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(origin.toString()));
+//                    } catch (DateTimeParseException ex3) {
+//                        return LocalDateTime.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(origin.toString()));
+//                    }
                 }
             }
         } else if (type == LocalDate.class) {
