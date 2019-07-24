@@ -9,23 +9,29 @@ import org.springframework.core.convert.ConversionService
 import org.springframework.http.MediaType
 import java.lang.reflect.InvocationTargetException
 import java.util.function.Function
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Expression
-import javax.persistence.criteria.Root
+import javax.persistence.criteria.*
 import javax.persistence.metamodel.SingularAttribute
 
-typealias ToSelect<X, T> = (Root<T>, CriteriaBuilder, CriteriaQuery<*>) -> Expression<out X>
+typealias ToSelect<X, T> = (From<*, T>, CriteriaBuilder, CriteriaQuery<*>) -> Expression<out X>
 typealias ToFormat = (Any?, MediaType?, exportMe: Function<MutableList<Any?>, *>?) -> Any?
 
 /**
  * 新版本构建器。
+ * @param T 当前build类型
+ * @param S 原始Entity类型
  * @author CJ
  */
-class FieldBuilder<T>(
-    private val type: Class<T>,
-    private val conversionService: ConversionService
+class FieldBuilder<T, S>(
+    private val type: Class<S>,
+    private val conversionService: ConversionService,
+    val toReadFrom: (From<*, S>) -> From<*, T>
 ) {
+    fun <Y> forBuilder(from: (From<*, T>) -> From<*, Y>): FieldBuilder<Y, S> {
+        return FieldBuilder(
+            type, conversionService
+        ) { from(toReadFrom(it)) }
+    }
+
     /**
      * @return 一个[ConversionService]友好的格式工具
      */
@@ -50,12 +56,12 @@ class FieldBuilder<T>(
         name: String = field,
         order: Boolean = true,
         noinline format: ToFormat = { input, _, _ -> input }
-    ): TypeFieldDefinition<X, T> {
+    ): TypeFieldDefinition<X, S> {
         return MyField(
             name = name,
             resultType = X::class.java,
             order = order,
-            selector = { root, _, _ -> root.get(field) },
+            selector = { root, _, _ -> toReadFrom(root).get(field) },
             format = format
         )
     }
@@ -73,12 +79,14 @@ class FieldBuilder<T>(
         noinline selector: ToSelect<X, T>,
         order: Boolean = true,
         noinline format: ToFormat = { input, _, _ -> input }
-    ): TypeFieldDefinition<X, T> {
+    ): TypeFieldDefinition<X, S> {
         return MyField(
             name = name,
             resultType = X::class.java,
             order = order,
-            selector = selector,
+            selector = { from, cb, cq ->
+                selector(toReadFrom(from), cb, cq)
+            },
             format = format
         )
     }
@@ -96,12 +104,12 @@ class FieldBuilder<T>(
         name: String = attribute.name,
         order: Boolean = true,
         format: ToFormat = { input, _, _ -> input }
-    ): TypeFieldDefinition<X, T> {
+    ): TypeFieldDefinition<X, S> {
         return MyField(
             name = name,
             resultType = attribute.javaType,
             order = order,
-            selector = { root, _, _ -> root.get(attribute) },
+            selector = { root, _, _ -> toReadFrom(root).get(attribute) },
             format = format
         )
     }
@@ -109,13 +117,13 @@ class FieldBuilder<T>(
     inner class MyField<X>(
         private val name: String,
         private val resultType: Class<X>,
-        private val selector: ToSelect<X, T>,
+        private val selector: ToSelect<X, S>,
         private val order: Boolean,
         private val format: ToFormat
-    ) : TypeFieldDefinition<X, T> {
+    ) : TypeFieldDefinition<X, S> {
         override fun getResultType(): Class<X> = resultType
 
-        override fun select(cb: CriteriaBuilder, query: CriteriaQuery<*>, root: Root<T>): Expression<out X> {
+        override fun select(cb: CriteriaBuilder, query: CriteriaQuery<*>, root: Root<S>): Expression<out X> {
             return selector(root, cb, query)
         }
 
@@ -126,7 +134,7 @@ class FieldBuilder<T>(
         override fun order(
             query: CriteriaQuery<*>,
             criteriaBuilder: CriteriaBuilder,
-            root: Root<T>
+            root: Root<S>
         ): Expression<*>? {
             if (!order)
                 return null
@@ -135,11 +143,11 @@ class FieldBuilder<T>(
 
         override fun name(): String = name
 
-        override fun readValue(entity: T): Any {
+        override fun readValue(entity: S): Any {
 //        if (entityFunction != null)
 //            return entityFunction.apply(entity)
             return try {
-                val fake = select(FakeCriteriaBuilder(), FakeCriteriaQuery(), FakeRoot<T>()) as AbstractFake
+                val fake = select(FakeCriteriaBuilder(), FakeCriteriaQuery(), FakeRoot<S>()) as AbstractFake
                 fake.toValue(entity)
             } catch (e: Throwable) {
                 try {

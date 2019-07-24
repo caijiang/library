@@ -32,9 +32,11 @@ class ItemController2 : CrudController<Item, Long, Item>(
     override fun listFields(
         principal: Any?,
         locale: Locale,
-        builder: FieldBuilder<Item>
+        builder: FieldBuilder<Item, Item>
     ): List<FieldDefinition<Item>> {
         return listOf(
+            builder.forBuilder { it }
+                .forSelect("name2", { it, _, _ -> it.get<String>("name") }),
 //            Fields.asBasic("id")
 //            , Fields.asBasic("name")
             builder.forField<String>("name")

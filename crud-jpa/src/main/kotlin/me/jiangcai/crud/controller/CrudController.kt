@@ -83,7 +83,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
     protected abstract fun listFields(
         principal: Any?,
         locale: Locale,
-        builder: FieldBuilder<T>
+        builder: FieldBuilder<T, T>
     ): List<FieldDefinition<T>>
 
     /**
@@ -348,7 +348,7 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
             allPathVariables,
             null
         )
-        val builder = FieldBuilder(currentClass(), conversionService)
+        val builder = FieldBuilder(currentClass(), conversionService) { it }
         return object : RowDefinition<T> {
             override fun entityClass(): Class<T> {
                 return currentClass()
