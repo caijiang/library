@@ -14,10 +14,7 @@ import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.util.*;
 import java.util.function.Function;
@@ -135,10 +132,25 @@ public class RowServiceImpl implements RowService {
 
             // 输出到结果
             log.debug("RW Result: total:" + total + ", list:" + list + ", fields:" + fieldDefinitions.size());
-            return new Pair(new PageImpl(list, pageable, total), null);
+            return new Pair(new PageImpl(list, pageable, total), readOtherAsMap(resultPair.otherQuery));
         } catch (NoResultException ex) {
             log.debug("RW Result: no result found.");
-            return new Pair(new PageImpl(Collections.EMPTY_LIST, pageable, 0), null);
+            return new Pair(new PageImpl(Collections.EMPTY_LIST, pageable, 0), new HashMap<String, Object>());
+        }
+    }
+
+    private Map<String, Object> readOtherAsMap(CriteriaQuery<Tuple> query) {
+        if (query == null)
+            return null;
+        try {
+            Tuple tuple = entityManager.createQuery(query).getSingleResult();
+            Map<String, Object> x = new HashMap<>();
+            tuple.getElements().forEach(it -> x.put(it.getAlias(), tuple.get(it.getAlias())));
+            return x;
+        } catch (NoResultException ex) {
+            return null;
+        } catch (NonUniqueResultException ex) {
+            throw new IllegalStateException("需要聚合结果，结果聚合结果给出了多个！");
         }
     }
 
@@ -216,6 +228,7 @@ public class RowServiceImpl implements RowService {
 
         Root root = pair.dataQuery.from(rowDefinition.entityClass());
         Root countRoot = pair.countQuery.from(rowDefinition.entityClass());
+        Root otherRoot = pair.countQuery.from(rowDefinition.entityClass());
 
         @SuppressWarnings("Convert2Lambda")
         CriteriaQuery dataQuery = pair.dataQuery.multiselect(fieldDefinitions.stream()
@@ -235,6 +248,13 @@ public class RowServiceImpl implements RowService {
         dataQuery = rowDefinition.dataGroup(criteriaBuilder, dataQuery, root);
         pair.countQuery = where(criteriaBuilder, pair.countQuery, countRoot, rowDefinition, filterSpecification);
         pair.countQuery = rowDefinition.countQuery(criteriaBuilder, pair.countQuery, countRoot);
+        pair.otherQuery = rowDefinition.sampleQuery(criteriaBuilder
+                , pair.otherQuery
+                , otherRoot);
+
+        if (pair.otherQuery != null) {
+            pair.otherQuery = where(criteriaBuilder, pair.otherQuery, root, rowDefinition, filterSpecification);
+        }
 
         if (distinct)
             pair.countQuery = pair.countQuery.select(criteriaBuilder.countDistinct(rowDefinition.count(pair.countQuery, criteriaBuilder, countRoot)));
@@ -254,7 +274,7 @@ public class RowServiceImpl implements RowService {
             dataQuery = dataQuery.orderBy(order);
 
 
-        return new QueryPair(dataQuery, pair.countQuery);
+        return new QueryPair(dataQuery, pair.countQuery, pair.otherQuery);
     }
 
     private <T> CriteriaQuery<T> where(CriteriaBuilder criteriaBuilder, CriteriaQuery<T> query, Root<?> root
@@ -278,10 +298,12 @@ public class RowServiceImpl implements RowService {
     private class QueryPair {
         CriteriaQuery dataQuery;
         CriteriaQuery<Long> countQuery;
+        CriteriaQuery<Tuple> otherQuery;
 
         QueryPair(CriteriaBuilder criteriaBuilder) {
             dataQuery = criteriaBuilder.createQuery();
             countQuery = criteriaBuilder.createQuery(Long.class);
+            otherQuery = criteriaBuilder.createTupleQuery();
         }
     }
 }

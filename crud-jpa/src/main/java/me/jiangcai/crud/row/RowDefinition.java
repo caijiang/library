@@ -2,6 +2,7 @@ package me.jiangcai.crud.row;
 
 import org.springframework.data.jpa.domain.Specification;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import java.util.List;
 
@@ -75,5 +76,17 @@ public interface RowDefinition<T> {
      */
     default CriteriaQuery<Long> countQuery(CriteriaBuilder cb, CriteriaQuery<Long> query, Root<T> root) {
         return query;
+    }
+
+    /**
+     * 聚合查询, 每一个结果都必须具备 alias
+     *
+     * @param cb    cb
+     * @param query query
+     * @param root  root
+     * @return 样本合并查询的结果; null 表示不支持
+     */
+    default CriteriaQuery<Tuple> sampleQuery(CriteriaBuilder cb, CriteriaQuery<Tuple> query, Root<T> root) {
+        return null;
     }
 }

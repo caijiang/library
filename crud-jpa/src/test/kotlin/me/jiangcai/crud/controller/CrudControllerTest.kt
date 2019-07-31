@@ -76,7 +76,7 @@ class CrudControllerTest : BaseTest2() {
         mockMvc.perform(
             get("/items2", userAsRole("R"))
         )
-            .andDo(print())
+//            .andDo(print())
             .andExpect(status().isOk)
 
 //        mockMvc.perform(
@@ -340,6 +340,41 @@ class CrudControllerTest : BaseTest2() {
             get(newOneUri, userAsRole("R"))
         )
             .andExpect(status().isNotFound)
+
+        // 聚合测试。
+
+        val newOneUri2 = mockMvc.perform(
+            post("/items3", userAsRole("C"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(newData))
+        )
+            .andExpect(status().isCreated)
+            .andExpect(header().string("Location", StartsWith("/items3/")))
+            .andReturn().response.getHeader("Location")
+
+        mockMvc.perform(
+            get("/items3", userAsRole("R"))
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.sumInt1").value(0))
+            .andExpect(jsonPath("$.count").value(1))
+
+        mockMvc.perform(
+            put("$newOneUri2/int1", userAsRole("U"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(int1.toString())
+        )
+            .andExpect(status().isAccepted)
+
+        mockMvc.perform(
+            get("/items3", userAsRole("R"))
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.sumInt1").value(int1))
+            .andExpect(jsonPath("$.count").value(1))
+
+        mockMvc.perform(
+            delete(newOneUri2, userAsRole("D"))
+        )
+            .andExpect(status().isNoContent)
     }
 
     private fun userAsRole(role: String): User {

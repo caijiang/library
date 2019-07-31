@@ -32,6 +32,7 @@ import javax.annotation.Resource
 import javax.persistence.EntityManager
 import javax.persistence.NoResultException
 import javax.persistence.PersistenceContext
+import javax.persistence.Tuple
 import javax.persistence.criteria.*
 
 /**
@@ -372,10 +373,50 @@ abstract class CrudController<T : CrudFriendly<ID>, ID : Serializable, X : T>(
                 return listOrder(criteriaBuilder, root)
             }
 
+            override fun sampleQuery(
+                cb: CriteriaBuilder,
+                query: CriteriaQuery<Tuple>,
+                root: Root<T>
+            ): CriteriaQuery<Tuple>? {
+                val keywords = sampleKeywords(
+                    principal, allPathVariables, locale, request
+                ) ?: return null
+                if (keywords.isEmpty()) return null
+
+                return query.multiselect(
+                    keywords.map {
+                        it.value.invoke(cb, query, root).alias(it.key)
+                    }
+                )
+            }
 //            override fun dataGroup(cb: CriteriaBuilder, query: CriteriaQuery<T>, root: Root<T>): CriteriaQuery<T> {
 //                return listGroup(cb, query, root)
 //            }
         }
+    }
+
+    /**
+     * 聚合查询的结果关键字。
+     * **注意，不是所有的渲染器都支持聚合结果**
+     *
+     * 一个经典的例子:
+     * ```kotlin
+     * return mapOf(
+     * "sumInt1" to { cb, _, root -> cb.sum(root.get("int1")) },
+     * "count" to { cb, _, root -> cb.count(root) }
+     * )
+     * ```
+     *
+     * 产生的数据最终将直接写入到结果响应中
+     *
+     * @return 关键字和对应的获取方式(必须确保返回的是聚合查询的结果)
+     */
+    protected fun sampleKeywords(
+        principal: Any?, allPathVariables: Map<String, String>
+        , locale: Locale
+        , request: WebRequest
+    ): Map<String, (CriteriaBuilder, CriteriaQuery<Tuple>, Root<T>) -> Selection<*>>? {
+        return null
     }
 
     @DeleteMapping("/{id}")
