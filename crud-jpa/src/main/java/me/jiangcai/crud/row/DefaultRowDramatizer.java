@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author CJ
@@ -45,7 +46,7 @@ public class DefaultRowDramatizer extends AbstractMediaRowDramatizer implements 
     }
 
     @Override
-    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest) throws IOException {
+    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException {
 // i do not know
         HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
         try (OutputStream stream = response.getOutputStream()) {

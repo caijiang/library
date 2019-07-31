@@ -57,9 +57,9 @@ public class Select2Dramatizer extends AbstractMediaRowDramatizer implements Row
     }
 
     @Override
-    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest) throws IOException {
+    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException {
         // 是否已完成？ total < ofset+size
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = initMap == null ? new HashMap<>() : initMap;
         json.put("total_count", page.getTotalElements());
         json.put("items", rows);
         // 实际上……

@@ -56,7 +56,7 @@ public class IndefiniteRowDefinitionHandler implements HandlerMethodReturnValueH
                 .getResultList();
 
         log.debug("RW Result: total:-1, list:" + list + ", fields:" + fieldDefinitions.size());
-        dramatizer.writeResponse(list, fieldDefinitions, webRequest);
+        dramatizer.writeResponse(list, fieldDefinitions, webRequest, null);
         mavContainer.setRequestHandled(true);
     }
 }

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 获取一条数据
@@ -51,7 +52,7 @@ public class SingleRowDramatizer extends AbstractMediaRowDramatizer implements R
     }
 
     @Override
-    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest) throws IOException {
+    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException {
         HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
         try (OutputStream stream = response.getOutputStream()) {
             if (CollectionUtils.isEmpty(rows)) {

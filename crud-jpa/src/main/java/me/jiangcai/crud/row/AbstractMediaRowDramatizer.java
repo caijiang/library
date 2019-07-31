@@ -8,6 +8,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 直接以一种正文响应写入
@@ -47,17 +48,19 @@ public abstract class AbstractMediaRowDramatizer implements RowDramatizer {
     }
 
     @Override
-    public void writeResponse(Page<?> page, List<? extends IndefiniteFieldDefinition> fields, NativeWebRequest webRequest) throws IOException {
+    public void writeResponse(Page<?> page, List<? extends IndefiniteFieldDefinition> fields
+            , NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException {
         final HttpServletResponse nativeResponse = webRequest.getNativeResponse(HttpServletResponse.class);
 
         nativeResponse.setHeader("Content-Type", toMediaType().toString());
 
         List<Object> rows = RowService.drawToRows(page.getContent(), fields, toMediaType());
 
-        writeData(page, rows, webRequest);
+        writeData(page, rows, webRequest, initMap);
     }
 
-    protected abstract void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest) throws IOException;
+    protected abstract void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest
+            , Map<String, Object> initMap) throws IOException;
 
 
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,20 +62,21 @@ public interface RowDramatizer {
      * @param page       结果集
      * @param fields     字段
      * @param webRequest 请求
+     * @param initMap  初始的map，这里的数据都会直接写入响应
      * @throws IOException 写入时出现的
      */
-    void writeResponse(Page<?> page, List<? extends IndefiniteFieldDefinition> fields, NativeWebRequest webRequest) throws IOException;
+    void writeResponse(Page<?> page, List<? extends IndefiniteFieldDefinition> fields, NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException;
 
     /**
      * 写入所有结果响应
-     * 默认中会将list伪装成一个Page以方便实现者只需实现{@link #writeResponse(Page, List, NativeWebRequest)}但依然提供覆盖的可能。
+     * 默认中会将list伪装成一个Page以方便实现者只需实现{@link #writeResponse(Page, List, NativeWebRequest, Map)}但依然提供覆盖的可能。
      *
      * @param list       结果集
      * @param fields     字段
      * @param webRequest 请求
      * @throws IOException 写入时出现的
      */
-    default void writeResponse(List<?> list, List<? extends IndefiniteFieldDefinition> fields, NativeWebRequest webRequest) throws IOException {
+    default void writeResponse(List<?> list, List<? extends IndefiniteFieldDefinition> fields, NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException {
         writeResponse(new Page() {
 
             @SuppressWarnings("NullableProblems")
@@ -158,7 +160,7 @@ public interface RowDramatizer {
                 throw new IllegalStateException("不应该调用");
             }
 
-        }, fields, webRequest);
+        }, fields, webRequest, initMap);
     }
 
     /**
@@ -179,6 +181,7 @@ public interface RowDramatizer {
      * @param webRequest    请求
      * @throws IOException 写入时出现的
      */
+    @SuppressWarnings("RedundantThrows")
     default void fetchAndWriteResponse(MethodParameter type, RowDefinition rowDefinition, boolean distinct
             , NativeWebRequest webRequest) throws IOException {
 

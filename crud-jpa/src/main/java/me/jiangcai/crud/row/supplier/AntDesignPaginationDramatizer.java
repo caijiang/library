@@ -48,13 +48,13 @@ public class AntDesignPaginationDramatizer extends AbstractMediaRowDramatizer im
     }
 
     @Override
-    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest) throws IOException {
+    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException {
         Map<String, Object> pagination = new HashMap<>();
         pagination.put("current", page.getNumber() + 1);
         pagination.put("pageSize", page.getSize());
         pagination.put("total", page.getTotalElements());
 
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = initMap == null ? new HashMap<>() : initMap;
         json.put("pagination", pagination);
         json.put("list", rows);
         objectMapper.writeValue(webRequest.getNativeResponse(HttpServletResponse.class).getOutputStream(), json);

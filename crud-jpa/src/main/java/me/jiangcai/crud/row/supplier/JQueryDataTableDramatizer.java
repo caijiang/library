@@ -94,8 +94,8 @@ public class JQueryDataTableDramatizer extends AbstractMediaRowDramatizer implem
 
 
     @Override
-    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest) throws IOException {
-        Map<String, Object> json = new HashMap<>();
+    protected void writeData(Page<?> page, List<Object> rows, NativeWebRequest webRequest, Map<String, Object> initMap) throws IOException {
+        Map<String, Object> json = initMap == null ? new HashMap<>() : initMap;
         json.put("draw", queryDraw(webRequest));
         json.put("recordsFiltered", page.getTotalElements());
         json.put("recordsTotal", page.getTotalElements());

@@ -6,7 +6,6 @@ import me.jiangcai.crud.modify.PropertyChanger;
 import me.jiangcai.crud.row.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +34,8 @@ public class RowServiceImpl implements RowService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    private final List<PropertyChanger> changerSet;
+
     @Override
     public <T> List<T> queryAllEntity(RowDefinition<T> definition) {
         definition.fields();
@@ -52,6 +53,10 @@ public class RowServiceImpl implements RowService {
             cq = cq.orderBy(o);
 
         return entityManager.createQuery(cq).getResultList();
+    }
+
+    public RowServiceImpl(List<PropertyChanger> changerSet) {
+        this.changerSet = changerSet;
     }
 
     @Override
@@ -78,37 +83,34 @@ public class RowServiceImpl implements RowService {
             countCq = countCq.where(specification.toPredicate(countRoot, countCq, cb));
         }
         countCq = countCq.select(cb.count(countRoot));
-        return new PageImpl<T>(resultList, pageable, entityManager.createQuery(countCq).getSingleResult());
+        return new PageImpl<>(resultList, pageable, entityManager.createQuery(countCq).getSingleResult());
     }
-
-    @Autowired
-    private List<PropertyChanger> changerSet;
 
     @SuppressWarnings("unchecked")
     @Override
-    public List<?> queryFields(RowDefinition rowDefinition, boolean distinct
+    public Pair<List<?>, Map<String, ?>> queryFields(RowDefinition rowDefinition, boolean distinct
             , OrderGenerator customOrderFunction) {
         final List<FieldDefinition> fieldDefinitions = rowDefinition.fields();
 
         QueryPair resultPair = smartQuery(rowDefinition, distinct, customOrderFunction, fieldDefinitions, null);
         try {
-            return entityManager.createQuery(resultPair.dataQuery).getResultList();
+            return new Pair(entityManager.createQuery(resultPair.dataQuery).getResultList(), null);
         } catch (NoResultException ex) {
             log.debug("RW Result: no result found.");
-            return Collections.emptyList();
+            return new Pair(Collections.emptyList(), null);
         }
     }
 
     @Override
     public Page<?> queryFields(RowDefinition rowDefinition, boolean distinct, OrderGenerator customOrderFunction
             , Pageable pageable) {
-        return queryFields(rowDefinition, distinct, customOrderFunction, pageable, null);
+        return queryFields(rowDefinition, distinct, customOrderFunction, pageable, null).getFirst();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public Page<?> queryFields(RowDefinition rowDefinition, boolean distinct,
-                               OrderGenerator customOrderFunction, Pageable pageable, List<Pair<String, List<String>>> filters) {
+    public Pair<Page<?>, Map<String, ?>> queryFields(RowDefinition rowDefinition, boolean distinct,
+                                                     OrderGenerator customOrderFunction, Pageable pageable, List<Pair<String, List<String>>> filters) {
         final List<FieldDefinition> fieldDefinitions = rowDefinition.fields();
 
         QueryPair resultPair = smartQuery(rowDefinition, distinct, customOrderFunction, fieldDefinitions, filters);
@@ -133,10 +135,10 @@ public class RowServiceImpl implements RowService {
 
             // 输出到结果
             log.debug("RW Result: total:" + total + ", list:" + list + ", fields:" + fieldDefinitions.size());
-            return new PageImpl(list, pageable, total);
+            return new Pair(new PageImpl(list, pageable, total), null);
         } catch (NoResultException ex) {
             log.debug("RW Result: no result found.");
-            return new PageImpl(Collections.EMPTY_LIST, pageable, 0);
+            return new Pair(new PageImpl(Collections.EMPTY_LIST, pageable, 0), null);
         }
     }
 

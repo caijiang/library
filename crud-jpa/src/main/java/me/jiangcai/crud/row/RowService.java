@@ -84,6 +84,7 @@ public interface RowService {
      * @param <T>        实体类型
      * @return 根据查询定义，获取所有的实体
      */
+    @SuppressWarnings("unused")
     @Transactional(readOnly = true)
     <T> List<T> queryAllEntity(RowDefinition<T> definition);
 
@@ -92,6 +93,7 @@ public interface RowService {
      * @param <T>        实体类型
      * @return 根据查询定义，获取所有的实体
      */
+    @SuppressWarnings("unused")
     @Transactional(readOnly = true)
     <T> Page<T> queryEntity(RowDefinition<T> definition, Pageable pageable);
 
@@ -102,7 +104,7 @@ public interface RowService {
      * @param pageable            分页
      * @return 获取相关的字段
      */
-    Page<?> queryFields(RowDefinition rowDefinition, boolean distinct
+    Pair<Page<?>, Map<String, ?>> queryFields(RowDefinition rowDefinition, boolean distinct
             , OrderGenerator customOrderFunction, Pageable pageable, List<Pair<String, List<String>>> filters);
 
     /**
@@ -122,6 +124,6 @@ public interface RowService {
      * @param customOrderFunction 可选的自定义排序
      * @return 获取相关的字段
      */
-    List<?> queryFields(RowDefinition rowDefinition, boolean distinct
+    Pair<List<?>, Map<String, ?>> queryFields(RowDefinition rowDefinition, boolean distinct
             , OrderGenerator customOrderFunction);
 }
