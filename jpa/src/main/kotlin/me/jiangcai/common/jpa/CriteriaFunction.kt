@@ -476,7 +476,7 @@ open class CriteriaFunction(
     }
     //</editor-fold>
 
-    private val databaseFriendFullDateFormatter = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss.SSS", Locale.CHINA)
+    private val databaseFriendFullDateFormatter = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss", Locale.CHINA)
     //<editor-fold desc="时间段的比较">
     //    时间段的比较，一般是指from,to,范围
 
