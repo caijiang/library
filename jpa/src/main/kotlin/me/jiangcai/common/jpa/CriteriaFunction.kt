@@ -35,7 +35,7 @@ open class CriteriaFunction(
         return contact(builder.concat(args[0], args[1]), *others)
     }
 
-    private val databaseFriendLyDateFormatter = DateTimeFormatter.ofPattern("yyyy-M-d", Locale.CHINA)
+    private val databaseFriendLyDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.CHINA)
 
     private fun timezoneFixLocalDateTime(
         input: Expression<LocalDateTime>
@@ -476,7 +476,7 @@ open class CriteriaFunction(
     }
     //</editor-fold>
 
-    private val databaseFriendFullDateFormatter = DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss", Locale.CHINA)
+    private val databaseFriendFullDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
     //<editor-fold desc="时间段的比较">
     //    时间段的比较，一般是指from,to,范围
 
