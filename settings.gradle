@@ -14,3 +14,5 @@ include 'classic-login'
 include 'wechat-login'
 include 'qr'
 include 'owner'
+include 'mvc-spy'
+
