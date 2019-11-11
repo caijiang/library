@@ -17,6 +17,7 @@ internal class SpyConfig : ImportBeanDefinitionRegistrar {
         val data = importingClassMetadata!!.getAnnotationAttributes("me.jiangcai.common.spy.EnableSpy")
         val uri = data["value"]!!.toString()
 
+        // load SpyConfigCore
         val def = GenericBeanDefinition()
         def.beanClass = SpyConfigCore::class.java
         def.constructorArgumentValues = ConstructorArgumentValues()
