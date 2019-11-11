@@ -20,9 +20,9 @@ open class SpyFilter : OncePerRequestFilter() {
     /**
      * target uris
      */
-    val targets = Collections.synchronizedSet(mutableSetOf<Regex>())
+    val targets: MutableSet<Regex> = Collections.synchronizedSet(mutableSetOf<Regex>())
 
-    val records = Collections.synchronizedList(mutableListOf<Record>())
+    val records: MutableList<Record> = Collections.synchronizedList(mutableListOf<Record>())
 
     override fun doFilterInternal(
         request: HttpServletRequest,

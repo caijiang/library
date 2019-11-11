@@ -44,25 +44,22 @@ class SpyConfigTest : MvcTest() {
             get("$uri/targets")
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$").isArray)
 
         // POST /targets to create new one
         mockMvc.perform(
             post("$uri/targets")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("\'/echo\'")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("/echo")
 //                .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().is2xxSuccessful)
 
         mockMvc.perform(
             get("$uri/targets")
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$[0]").value("/echo"))
 
@@ -78,7 +75,7 @@ class SpyConfigTest : MvcTest() {
         )
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.length").value(1))
+            .andExpect(jsonPath("$.length()").value(1))
 
         // TODO more test...
 

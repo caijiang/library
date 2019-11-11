@@ -4,11 +4,9 @@ import me.jiangcai.common.spy.SpyFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
-import javax.annotation.PostConstruct
+import org.springframework.web.bind.annotation.*
 
 /**
  * * GET / for html page
@@ -26,11 +24,6 @@ class SpyController(
     private val spyFilter: SpyFilter
 ) {
 
-    @PostConstruct
-    fun init() {
-        println("uri to $uri")
-    }
-
     @GetMapping("/", "")
     fun well(): String {
         return "thymeleaf:classpath:/spy/index.html"
@@ -41,4 +34,17 @@ class SpyController(
     fun getTargets(): List<String> {
         return spyFilter.targets.map { it.toString() }
     }
+
+    @PostMapping("/targets")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun addTarget(@RequestBody input: String) {
+        spyFilter.targets.add(Regex(input))
+    }
+
+    @GetMapping("/results")
+    @ResponseBody
+    fun getResults(): Any {
+        return spyFilter.records
+    }
+
 }
