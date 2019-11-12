@@ -3,6 +3,7 @@ package me.jiangcai.common.spy
 import me.jiangcai.common.spy.mock.SpyRequest
 import me.jiangcai.common.spy.mock.SpyResponse
 import me.jiangcai.common.spy.result.Record
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.filter.OncePerRequestFilter
 import java.util.*
@@ -14,7 +15,10 @@ import javax.servlet.http.HttpServletResponse
  * @author CJ
  */
 @Configuration("spyFilter")
-open class SpyFilter : OncePerRequestFilter() {
+open class SpyFilter(
+    @Value("${"$"}{me.jiangcai.common.spy.uri:/manage/spy}")
+    val uri: String
+) : OncePerRequestFilter() {
 
     /**
      * target uris
@@ -28,9 +32,12 @@ open class SpyFilter : OncePerRequestFilter() {
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        if (targets.any {
+        if (
+            !request.requestURI.startsWith(uri)
+            && targets.any {
                 request.requestURI?.matches(it) == true
-            }) {
+            }
+        ) {
             val start = System.currentTimeMillis()
             // read the request, and
             val data = request.inputStream.readBytes()
@@ -46,6 +53,7 @@ open class SpyFilter : OncePerRequestFilter() {
                         start, request, data, response, res
                     )
                 )
+                return
             } catch (e: Throwable) {
                 // read all data.
                 records.add(
@@ -55,7 +63,6 @@ open class SpyFilter : OncePerRequestFilter() {
                 )
                 throw e
             }
-            return
         } else
             filterChain.doFilter(request, response)
     }

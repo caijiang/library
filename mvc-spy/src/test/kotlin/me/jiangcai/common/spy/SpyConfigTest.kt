@@ -162,9 +162,12 @@ class SpyConfigTest : MvcTest() {
         )
             .andExpect(status().is2xxSuccessful)
 
-        mockMvc.perform(
-            get("/error")
-        )
+        try {
+            mockMvc.perform(
+                get("/error")
+            )
+        } catch (e: Throwable) {
+        }
         mockMvc.perform(
             get("$uri/results")
                 .accept(MediaType.APPLICATION_JSON)

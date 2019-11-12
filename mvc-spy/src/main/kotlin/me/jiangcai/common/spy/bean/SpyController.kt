@@ -1,5 +1,6 @@
 package me.jiangcai.common.spy.bean
 
+import me.jiangcai.common.ext.annotations.AllOpenClass
 import me.jiangcai.common.spy.SpyFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -21,9 +22,9 @@ import java.security.MessageDigest
 @Controller
 @DependsOn("spyConfigCore")
 @RequestMapping("${'$'}{me.jiangcai.common.spy.uri}")
-@me.jiangcai.common.ext.annotations.AllOpenClass
+@AllOpenClass
 class SpyController(
-    @Value("${"$"}{me.jiangcai.common.spy.uri:???}")
+    @Value("${"$"}{me.jiangcai.common.spy.uri:/manage/spy}")
     val uri: String,
     @Autowired
     private val spyFilter: SpyFilter
