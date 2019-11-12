@@ -21,6 +21,7 @@ import java.security.MessageDigest
 @Controller
 @DependsOn("spyConfigCore")
 @RequestMapping("${'$'}{me.jiangcai.common.spy.uri}")
+@me.jiangcai.common.ext.annotations.AllOpenClass
 class SpyController(
     @Value("${"$"}{me.jiangcai.common.spy.uri:???}")
     val uri: String,

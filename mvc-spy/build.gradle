@@ -19,3 +19,9 @@ dependencies {
 //    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
 //    testCompile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
 }
+
+apply plugin: 'kotlin-allopen'
+
+allOpen {
+    annotation("me.jiangcai.common.ext.annotations.AllOpenClass")
+}
