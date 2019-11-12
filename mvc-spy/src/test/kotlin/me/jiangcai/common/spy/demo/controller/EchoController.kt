@@ -21,4 +21,9 @@ class EchoController {
     fun more() {
 
     }
+
+    @GetMapping("/error")
+    fun killMe() {
+        throw Exception("just error")
+    }
 }

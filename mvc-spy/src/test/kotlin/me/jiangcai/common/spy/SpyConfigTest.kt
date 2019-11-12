@@ -141,7 +141,6 @@ class SpyConfigTest : MvcTest() {
 
         // delete by md5
         val x = String(Hex.encode(MessageDigest.getInstance("MD5").digest("/echo".toByteArray())))
-        println(x)
         mockMvc.perform(
             delete("$uri/targets/$x")
         )
@@ -153,6 +152,26 @@ class SpyConfigTest : MvcTest() {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(0))
+
+
+        // then we need crack the error
+        mockMvc.perform(
+            post("$uri/targets")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("/error")
+        )
+            .andExpect(status().is2xxSuccessful)
+
+        mockMvc.perform(
+            get("/error")
+        )
+        mockMvc.perform(
+            get("$uri/results")
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.length()").value(1))
+
 
     }
 

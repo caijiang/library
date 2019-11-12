@@ -38,14 +38,23 @@ open class SpyFilter : OncePerRequestFilter() {
             // mock the response, to record outputs.
             val res = SpyResponse(response)
 
-            filterChain.doFilter(SpyRequest(request, data), res)
-            // read all data.
-            records.add(
-                Record.toRecord(
-                    start, request, data, response, res
+            try {
+                filterChain.doFilter(SpyRequest(request, data), res)
+                // read all data.
+                records.add(
+                    Record.toRecord(
+                        start, request, data, response, res
+                    )
                 )
-            )
-
+            } catch (e: Throwable) {
+                // read all data.
+                records.add(
+                    Record.toRecord(
+                        start, request, data, ex = e
+                    )
+                )
+                throw e
+            }
             return
         } else
             filterChain.doFilter(request, response)

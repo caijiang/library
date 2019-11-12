@@ -1,6 +1,8 @@
 package me.jiangcai.common.spy.result
 
 import me.jiangcai.common.spy.mock.SpyResponse
+import java.io.ByteArrayOutputStream
+import java.io.PrintWriter
 import java.nio.charset.Charset
 import java.util.*
 import javax.servlet.http.HttpServletRequest
@@ -34,17 +36,33 @@ data class Record(
             start: Long,
             request: HttpServletRequest,
             data: ByteArray,
-            response: HttpServletResponse,
-            res: SpyResponse
+            response: HttpServletResponse? = null,
+            res: SpyResponse? = null,
+            ex: Throwable? = null
         ): Record {
             return Record(
                 start = start, end = System.currentTimeMillis(), method = request.method, uri = request.requestURI
                 , url = request.requestURL.toString(), parameters = request.parametersList()
                 , requestHeaders = request.headersList()
-                , responseHeaders = response.headersList()
-                , code = response.status
+                , responseHeaders = response?.headersList() ?: emptyList()
+                , code = response?.status ?: 500
                 , requestText = data.toString(Charset.forName("UTF-8"))
-                , responseText = res.output.data.toByteArray().toString(Charset.forName("UTF-8"))
+                , responseText = res?.output?.data?.toByteArray()?.toString(Charset.forName("UTF-8"))
+                    ?: {
+                        if (ex == null)
+                            "????? SPY Error!"
+                        else {
+                            val buf = ByteArrayOutputStream()
+                            PrintWriter(buf, true)
+                                .use {
+                                    ex.printStackTrace(it)
+                                    it.flush()
+                                }
+                            buf.toByteArray().toString(Charset.forName("UTF-8"))
+                                .replace("\n\t", "<br />")
+                                .replace("\n", "<br />")
+                        }
+                    }()
             )
         }
     }
