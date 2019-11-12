@@ -1,10 +1,298 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Spy Manager</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.12.0/js/md5.min.js"></script>
+    <script src="//code.jquery.com/jquery-2.2.1.min.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.loadtemplate/1.5.10/jquery.loadTemplate.js"></script>
 </head>
-<body>
+<!--/*@thymesVar id="targetUri" type="java.lang.String"*/-->
+<!--/*@thymesVar id="resultUri" type="java.lang.String"*/-->
+<body data-resultUri="../../mock/result.json"
+      data-targetUri="../../mock/target.json"
+      th:attr="data-targetUri=@{''+${targetUri}+''},data-resultUri=@{''+${resultUri}+''}">
 
+<h1>Spy Targets</h1>
+<h2>Regex of monitoring uri</h2>
+<p>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button name="addTargetButton" title="Click to add new target." type="button"><span
+            class="glyphicon glyphicon-plus"></span></button>
+    <button name="deleteAllResults" title="Click to delete all results." type="button"><span
+            class="glyphicon glyphicon-trash"></span></button>
+    <button name="refreshResults" title="Click to load new results." type="button"><span
+            class="glyphicon glyphicon-refresh"></span></button>
+</p>
+
+<div class="container-fluid">
+
+    <div aria-multiselectable="true" id="spy" role="tablist">
+
+    </div>
+
+</div>
+
+<script id="parameterTemplate" type="text/html">
+    <div class="row">
+        <div class="col-md-1" data-content="name"></div>
+        <div class="col-md-11" data-content="value"></div>
+    </div>
+</script>
+<script id="headerTemplate" type="text/html">
+    <div class="row">
+        <div class="col-md-2" data-content="name"></div>
+        <div class="col-md-10" data-content="value"></div>
+    </div>
+</script>
+
+<script id="requestTemplate" type="text/html">
+    <h6 data-content="method"></h6>
+    <p data-content="url"></p>
+    <h6>Parameters:</h6>
+    <div class="parameters container-fluid">
+    </div>
+    <h6>Headers:</h6>
+    <div class="headers"></div>
+    <h6>Body:</h6>
+    <div data-content="requestText"></div>
+</script>
+
+<script id="responseTemplate" type="text/html">
+    <div><span data-content="code"></span> in <span data-content="cost"></span>ms</div>
+    <div>Finished at <span data-content="endTime"></span></div>
+    <h6>Headers:</h6>
+    <div class="headers"></div>
+    <h6>Body:</h6>
+    <div data-content="responseText"></div>
+</script>
+
+
+<!--suppress JSUnresolvedFunction, JSUnusedGlobalSymbols, JSUnresolvedVariable -->
+<script>
+    $(function () {
+        var body = $('body');
+
+        $('[name=addTargetButton]')
+            .click(function () {
+                var uri = prompt('please type in the URI or the regex or URI that you wanna spy.')
+                if (uri && uri.length > 0) {
+                    var url = body.attr('data-targetUri');
+                    $.ajax(url, {
+                        method: 'POST',
+                        contentType: 'text/plain',
+                        data: uri,
+                        success: function () {
+                            renderTarget(uri)
+                        }
+                    })
+                }
+            });
+
+        $('[name=deleteAllResults]').click(function () {
+            if (confirm('sure for delete all results?')) {
+                var url = body.attr('data-resultUri');
+                $.ajax(url, {
+                    method: 'DELETE',
+                    complete: function () {
+                        location.reload()
+                    }
+                })
+            }
+        });
+
+        $('[name=refreshResults]').click(function () {
+            renderResults()
+        });
+
+        body.on('click', '.removeTargetButton', function () {
+            let target = $(this).closest('.target');
+            var uri = target.attr('data-uri');
+            var url = body.attr('data-targetUri');
+            $.ajax(url + '/' + encodeURIComponent(uri), {
+                method: 'DELETE',
+                complete: function () {
+                    target.remove()
+                }
+            })
+        });
+
+        body.on('click', '.removeResultButton', function () {
+            let result = $(this).closest('.result');
+            let id = result.attr('data-id');
+            let url = body.attr('data-resultUri');
+
+            $.ajax(url + '/' + id, {
+                method: 'DELETE',
+                complete: function () {
+                    // all result we wanna delete
+                    let targets = $('.result').filter('[data-id=' + id + ']');
+                    // find the ... parent.
+                    let records = targets.closest('.records');
+
+                    targets.remove();
+                    records.filter(function (_, e) {
+                        return $('div', $(e)).length === 0
+                    }).each(function (_, e) {
+                        $(e).append('Empty...')
+                    })
+                }
+            });
+        });
+
+        // $('[name=removeTargetButton]')
+        //     .click(function () {
+        //         console.log($(this).parent('.target'))
+        //     });
+
+        function renderResults() {
+            var url = body.attr('data-resultUri');
+            $.ajax(url, {
+                success: function (list) {
+                    function fillWithResponseData(div, d1) {
+                        var data = {
+                            ...d1,
+                            cost: d1.end - d1.start,
+                            endTime: new Date(d1.end)
+                        };
+                        div.loadTemplate($("#responseTemplate"),
+                            data);
+                        var headers = $('.headers', div);
+                        headers.loadTemplate($('#headerTemplate'), data.responseHeaders);
+                    }
+
+                    function fillWithRequestData(div, data) {
+                        div.loadTemplate($("#requestTemplate"),
+                            data);
+                        var ps = $('.parameters', div);
+                        ps.loadTemplate($('#parameterTemplate'), data.parameters);
+                        var headers = $('.headers', div);
+                        headers.loadTemplate($('#headerTemplate'), data.requestHeaders);
+                    }
+
+                    function createTitle(uri, data) {
+                        var md = md5(uri + data.id);
+                        var recordsId = md + 'Records';
+                        var titleId = md + 'Title';
+                        var a = $('<a data-toggle="collapse" data-parent="#' + md5(uri) + '" href="#' + recordsId + '" aria-expanded="false"\n' +
+                            '                       aria-controls="' + recordsId + '">' + data.code + ' - ' + new Date(data.start) + '\n' +
+                            '                    </a>');
+                        var title = $('<div class="panel-heading" role="tab" id="' + titleId + '"><h4 class="panel-title pull-left"></h4><span class="glyphicon glyphicon-trash pull-right removeResultButton" style="font-size: 13px; cursor:pointer"></span><div class="clearfix"></div></div>');
+                        $('h4', title).append(a);
+                        return title;
+                    }
+
+                    function createRecords(uri, data) {
+                        var md = md5(uri + data.id);
+                        var recordsId = md + 'Records';
+                        var titleId = md + 'Title';
+                        var b = $('<div id="' + recordsId + '" class="panel-collapse collapse" role="tabpanel" aria-labelledby="' + titleId + '"></div>');
+                        var bodyId = md + 'Body';
+                        var requestId = md + 'Request';
+                        var responseId = md + 'Response';
+                        var body = $('<div class="panel-body " id="' + bodyId + '"></div>');
+
+                        var nav = $('<ul class="nav nav-tabs"></ul>');
+                        nav.append($('<li class="active"><a data-toggle="tab" href="#' + requestId + '">Request</a></li>'));
+                        nav.append($('<li><a data-toggle="tab" href="#' + responseId + '">Response</a></li>'));
+
+                        var request = $('<div id="' + requestId + '" class="tab-pane fade in active">');
+                        fillWithRequestData(request, data);
+
+                        var response = $('<div id="' + responseId + '" class="tab-pane fade">');
+                        fillWithResponseData(response, data);
+
+                        var tc = $('<div class="tab-content"></div>');
+                        tc.append(request);
+                        tc.append(response);
+
+                        body.append(nav);
+                        body.append(tc);
+
+                        b.append(body);
+                        return b;
+                    }
+
+                    // XXX-Time
+                    list.forEach(function (result) {
+                        // find the Records
+                        $('.target').filter(function (_, e) {
+                            var target = $(e);
+                            var uri = target.attr('data-uri');
+                            return uri === result.uri || RegExp('^' + uri + '$').test(result.uri)
+                        }).each(function (_, x) {
+                            var records = $('.records', $(x));
+                            var target = $(x).attr('data-uri');
+                            // avoid
+                            var id = md5(target, result.id);
+                            if ($('#' + id).length > 0)
+                                return;
+                            var div = $('<div class="panel panel-default result" id="' + id + '" data-id="' + result.id + '"></div>');
+                            var title = createTitle(target, result);
+                            var body = createRecords(target, result);
+                            div.append(title);
+                            div.append(body);
+
+                            if ($('div', records).length === 0) {
+                                records.empty()
+                            }
+                            records.append(div);
+                        });
+                    })
+                }
+            });
+        }
+
+        function renderTarget(v) {
+            function createTitle(uri) {
+                var md = md5(uri);
+                var recordsId = md + 'Records';
+                var titleId = md + 'Title';
+                var a = $('<a data-toggle="collapse" data-parent="#spy" href="#' + recordsId + '" aria-expanded="false"\n' +
+                    '                       aria-controls="' + recordsId + '">' + uri + '\n' +
+                    '                    </a>');
+                var title = $('<div class="panel-heading" role="tab" id="' + titleId + '"><h3 class="panel-title pull-left"></h3><span class="glyphicon glyphicon-trash pull-right removeTargetButton" style="font-size: 13px; cursor:pointer"></span><div class="clearfix"></div></div>');
+                $('h3', title).append(a);
+                return title;
+            }
+
+            function createRecords(uri) {
+                var md = md5(uri);
+                var recordsId = md + 'Records';
+                var titleId = md + 'Title';
+                var b = $('<div id="' + recordsId + '" class="panel-collapse collapse" role="tabpanel" aria-labelledby="' + titleId + '"></div>');
+                b.append($('<div class="panel-body records" id="' + md + '">Empty...</div>'));
+                return b;
+            }
+
+            var target = $('<div class="panel panel-default target" data-uri="' + v + '"></div>');
+            var title = createTitle(v);
+            var body = createRecords(v);
+            target.append(title);
+            target.append(body);
+            $('#spy').append(target);
+        }
+
+        function renderTargets() {
+            var url = body.attr('data-targetUri');
+            $.ajax(url, {
+                success: function (x) {
+                    var spy = $('#spy');
+                    spy.empty();
+                    x.forEach(function (x) {
+                        renderTarget(x)
+                    });
+
+                    // records
+                    renderResults()
+                }
+            })
+        }
+
+        renderTargets()
+    })
+</script>
 </body>
 </html>

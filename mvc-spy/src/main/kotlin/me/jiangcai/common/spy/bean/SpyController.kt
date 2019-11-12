@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -25,7 +26,9 @@ class SpyController(
 ) {
 
     @GetMapping("/", "")
-    fun well(): String {
+    fun well(model: Model): String {
+        model.addAttribute("targetUri", "$uri/targets")
+        model.addAttribute("resultUri", "$uri/results")
         return "thymeleaf:classpath:/spy/index.html"
     }
 
