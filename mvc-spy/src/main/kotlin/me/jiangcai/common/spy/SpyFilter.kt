@@ -5,7 +5,6 @@ import me.jiangcai.common.spy.mock.SpyResponse
 import me.jiangcai.common.spy.result.Record
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.filter.OncePerRequestFilter
-import java.time.LocalDateTime
 import java.util.*
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
@@ -32,7 +31,7 @@ open class SpyFilter : OncePerRequestFilter() {
         if (targets.any {
                 request.requestURI?.matches(it) == true
             }) {
-            val start = LocalDateTime.now()
+            val start = System.currentTimeMillis()
             // read the request, and
             val data = request.inputStream.readBytes()
 

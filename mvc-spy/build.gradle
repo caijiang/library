@@ -5,6 +5,7 @@ dependencies {
     compileOnly "javax:javaee-api:$javaee_version"
 
     compile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.0.4.RELEASE'
     api project(':thymeleaf-view')
     api project(':ext')
 

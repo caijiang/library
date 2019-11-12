@@ -4,13 +4,14 @@ import org.springframework.context.annotation.Import
 import java.lang.annotation.Inherited
 
 /**
- * 1. EnableSpy
- * 2. apply spyFilter via:
+ * * EnableSpy
+ * * apply spyFilter via:
  * ```java
  *  DelegatingFilterProxy filterProxy = new DelegatingFilterProxy();
  *  filterProxy.setTargetBeanName("spyFilter");
- *
  * ```
+ * * in Spring Security, it's only allow by role: ROLE_ROOT or ROLE_URI_SPY
+ * * view the manager .
  * @author CJ
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
