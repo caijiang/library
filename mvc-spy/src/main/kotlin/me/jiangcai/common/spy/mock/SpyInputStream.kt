@@ -20,6 +20,8 @@ class SpyInputStream(private val data: ByteArray) : ServletInputStream() {
     }
 
     override fun read(): Int {
+        if (isFinished)
+            return -1
         return data[pos++].toInt()
     }
 
