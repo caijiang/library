@@ -1,6 +1,8 @@
 package me.jiangcai.common.spy.result
 
 import me.jiangcai.common.spy.mock.SpyResponse
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.nio.charset.Charset
@@ -22,14 +24,16 @@ data class Record(
     val requestHeaders: List<NV>,
     val responseHeaders: List<NV>,
     val code: Int,
+    private val request: ByteArray,
+    private val response: ByteArray,
     /**
      * too big to show
      */
-    val responseText: String? = null,
+    val responseText: String? = if (response.size > 1024 * 1024) null else response.toString(Charset.forName("UTF-8")),
     /**
      * too big to show
      */
-    val requestText: String? = null
+    val requestText: String? = if (request.size > 1024 * 1024) null else request.toString(Charset.forName("UTF-8"))
 ) {
     companion object {
         fun toRecord(
@@ -46,25 +50,64 @@ data class Record(
                 , requestHeaders = request.headersList()
                 , responseHeaders = response?.headersList() ?: emptyList()
                 , code = response?.status ?: 500
-                , requestText = data.toString(Charset.forName("UTF-8"))
-                , responseText = res?.output?.data?.toByteArray()?.toString(Charset.forName("UTF-8"))
-                    ?: {
-                        if (ex == null)
-                            "????? SPY Error!"
-                        else {
-                            val buf = ByteArrayOutputStream()
-                            PrintWriter(buf, true)
-                                .use {
-                                    ex.printStackTrace(it)
-                                    it.flush()
-                                }
-                            buf.toByteArray().toString(Charset.forName("UTF-8"))
-                                .replace("\n\t", "<br />")
-                                .replace("\n", "<br />")
-                        }
-                    }()
+                , request = data
+                , response = res?.output?.data?.toByteArray() ?: {
+                    if (ex == null)
+                        "????? SPY Error!"
+                    else {
+                        val buf = ByteArrayOutputStream()
+                        PrintWriter(buf, true)
+                            .use {
+                                ex.printStackTrace(it)
+                                it.flush()
+                            }
+                        buf.toByteArray().toString(Charset.forName("UTF-8"))
+                            .replace("\n\t", "<br />")
+                            .replace("\n", "<br />")
+                    }
+                }().toByteArray()
             )
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Record) return false
+
+        if (id != other.id) return false
+        if (start != other.start) return false
+        if (end != other.end) return false
+        if (uri != other.uri) return false
+        if (url != other.url) return false
+        if (code != other.code) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + start.hashCode()
+        result = 31 * result + end.hashCode()
+        result = 31 * result + uri.hashCode()
+        result = 31 * result + url.hashCode()
+        result = 31 * result + code
+        return result
+    }
+
+    fun createResponseForResponse(): ResponseEntity<ByteArray> {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(
+                response
+            )
+    }
+
+    fun createResponseForRequest(): ResponseEntity<ByteArray> {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(
+                request
+            )
     }
 }
 

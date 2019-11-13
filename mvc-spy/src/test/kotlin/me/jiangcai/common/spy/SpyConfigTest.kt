@@ -124,6 +124,12 @@ class SpyConfigTest : MvcTest() {
                 .contentAsString, "$[0].id"
         )
 
+        // get the content
+        mockMvc.perform(
+            get("$uri/results/$resultId.request")
+        )
+            .andExpect(status().is2xxSuccessful)
+
         // also we can delete one by one.
         mockMvc.perform(
             delete("$uri/results/$resultId")

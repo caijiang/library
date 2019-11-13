@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.DependsOn
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
@@ -79,6 +80,24 @@ class SpyController(
         spyFilter.records.removeIf {
             it.id == id
         }
+    }
+
+    @GetMapping("/results/{id}.request")
+    fun downloadRequest(@PathVariable id: String): ResponseEntity<ByteArray> {
+        val record = spyFilter.records.find {
+            it.id == id
+        } ?: throw IllegalArgumentException("no result.")
+
+        return record.createResponseForRequest()
+    }
+
+    @GetMapping("/results/{id}.response")
+    fun downloadResponse(@PathVariable id: String): ResponseEntity<ByteArray> {
+        val record = spyFilter.records.find {
+            it.id == id
+        } ?: throw IllegalArgumentException("no result.")
+
+        return record.createResponseForResponse()
     }
 
 }
