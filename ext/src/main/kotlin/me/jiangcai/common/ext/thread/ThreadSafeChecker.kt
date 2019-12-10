@@ -3,6 +3,7 @@ package me.jiangcai.common.ext.thread
 import java.io.FileReader
 import java.math.BigDecimal
 import java.net.HttpURLConnection
+import java.net.InetAddress
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.Charset
@@ -29,8 +30,14 @@ class ThreadSafeChecker {
         } else {
             // linux only? that's bad
             try {
-                val type = "/etc/ssh/ssh_host_ecdsa_key.pub"
-                val fingerPrint = FileReader(type).readText()
+                var type = "/etc/ssh/ssh_host_ecdsa_key.pub"
+                val fingerPrint =
+                    try {
+                        FileReader(type).readText()
+                    } catch (e: Throwable) {
+                        type = "hostname"
+                        InetAddress.getLocalHost().hostName
+                    }
 
                 val data = "name=${URLEncoder.encode(name, "UTF-8")}&fingerPrintType=${URLEncoder.encode(
                     type,
