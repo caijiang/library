@@ -1,7 +1,6 @@
 package me.jiangcai.crud
 
 import com.mingshz.login.EnableClassicLogin
-import me.jiangcai.common.jpa.EnableJpa
 import me.jiangcai.common.jpa.JpaPackageScanner
 import me.jiangcai.crud.env.entity2.User
 import org.springframework.context.annotation.AdviceMode
@@ -21,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 @EnableTransactionManagement(mode = AdviceMode.PROXY)
 @ComponentScan("me.jiangcai.crud.env.controller")
 @EnableClassicLogin(loginClass = User::class)
-@EnableJpa(useH2TempDataSource = true)
+//@EnableJpa(useH2TempDataSource = true)
 @EnableCrud
 open class Test2Config : JpaPackageScanner {
     override fun addJpaPackage(prefix: String, set: MutableSet<String>) {

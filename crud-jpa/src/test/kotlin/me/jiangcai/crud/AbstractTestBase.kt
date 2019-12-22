@@ -9,8 +9,8 @@ import org.springframework.test.context.ContextConfiguration
 /**
  * @author CJ
  */
-@ContextConfiguration(classes = [BaseTest2.MyConfig::class, Test2Config::class])
-abstract class BaseTest2 : ClassicMvcTest() {
+@ContextConfiguration(classes = [AbstractTestBase.MyConfig::class, Test2Config::class])
+abstract class AbstractTestBase : ClassicMvcTest() {
 
     open class MyConfig : JpaPackageScanner {
         override fun addJpaPackage(prefix: String, set: MutableSet<String>) {

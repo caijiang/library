@@ -44,8 +44,12 @@ annotation class EnableJpa(
         // 支持 emoji
 //        JpaAttribute("eclipselink.session.customizer","me.jiangcai.common.jpa.mysql.UTFSessionCustomizer"),
         JpaAttribute("eclipselink.cache.shared.default", "false"),
+        JpaAttribute("hibernate.cache.use_second_level_cache", "false"),
         JpaAttribute("javax.persistence.schema-generation.database.action", "create"),
+        JpaAttribute("hibernate.hbm2ddl.auto", "update"),
+//        validate or update or create or create - drop
         JpaAttribute("eclipselink.weaving", "false"),
-        JpaAttribute("eclipselink.logging.level", "FINE")
+        JpaAttribute("eclipselink.logging.level", "FINE"),
+        JpaAttribute("hibernate.show_sql", "true")
     ]
 )

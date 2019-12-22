@@ -18,6 +18,7 @@ import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -91,11 +92,19 @@ public class RowServiceImpl implements RowService {
 
         QueryPair resultPair = smartQuery(rowDefinition, distinct, customOrderFunction, fieldDefinitions, null);
         try {
-            return new Pair(entityManager.createQuery(resultPair.dataQuery).getResultList(), null);
+            final List originList = entityManager.createQuery(resultPair.dataQuery).getResultList();
+            return new Pair(originList.stream().map(this::fromTuple).collect(Collectors.toList()), null);
         } catch (NoResultException ex) {
             log.debug("RW Result: no result found.");
             return new Pair(Collections.emptyList(), null);
         }
+    }
+
+    private Object fromTuple(Object origin) {
+        if (origin instanceof Tuple) {
+            return ((Tuple) origin).toArray();
+        }
+        return origin;
     }
 
     @Override
@@ -132,7 +141,7 @@ public class RowServiceImpl implements RowService {
 
             // 输出到结果
             log.debug("RW Result: total:" + total + ", list:" + list + ", fields:" + fieldDefinitions.size());
-            return new Pair(new PageImpl(list, pageable, total), readOtherAsMap(resultPair.otherQuery));
+            return new Pair(new PageImpl(list.stream().map(this::fromTuple).collect(Collectors.toList()), pageable, total), readOtherAsMap(resultPair.otherQuery));
         } catch (NoResultException ex) {
             log.debug("RW Result: no result found.");
             return new Pair(new PageImpl(Collections.EMPTY_LIST, pageable, 0), new HashMap<String, Object>());
@@ -228,20 +237,28 @@ public class RowServiceImpl implements RowService {
 
         Root root = pair.dataQuery.from(rowDefinition.entityClass());
         Root countRoot = pair.countQuery.from(rowDefinition.entityClass());
-        Root otherRoot = pair.countQuery.from(rowDefinition.entityClass());
+        Root otherRoot = pair.otherQuery.from(rowDefinition.entityClass());
 
-        @SuppressWarnings("Convert2Lambda")
-        CriteriaQuery dataQuery = pair.dataQuery.multiselect(fieldDefinitions.stream()
-                .map(new Function<FieldDefinition, Selection>() {
-                    @Override
-                    public Selection apply(FieldDefinition fieldDefinition) {
-//                        field
-//                                -> field.select(criteriaBuilder, originDataQuery, root)
-                        return fieldDefinition.select(criteriaBuilder, pair.dataQuery, root);
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()));
+        CriteriaQuery dataQuery = pair.dataQuery.select(criteriaBuilder.tuple(
+                fieldDefinitions.stream()
+                        .map(fieldDefinition -> {
+                            return fieldDefinition.select(criteriaBuilder, pair.dataQuery, root);
+                        })
+                        .filter(Objects::nonNull)
+                        .toArray((IntFunction<Selection<?>[]>) Selection[]::new)
+        ));
+//        @SuppressWarnings("Convert2Lambda")
+//        CriteriaQuery dataQuery = pair.dataQuery.multiselect(fieldDefinitions.stream()
+//                .map(new Function<FieldDefinition, Selection>() {
+//                    @Override
+//                    public Selection apply(FieldDefinition fieldDefinition) {
+////                        field
+////                                -> field.select(criteriaBuilder, originDataQuery, root)
+//                        return fieldDefinition.select(criteriaBuilder, pair.dataQuery, root);
+//                    }
+//                })
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList()));
 
         // where
         dataQuery = where(criteriaBuilder, dataQuery, root, rowDefinition, filterSpecification);
@@ -296,12 +313,12 @@ public class RowServiceImpl implements RowService {
 
     @AllArgsConstructor
     private class QueryPair {
-        CriteriaQuery dataQuery;
+        CriteriaQuery<Tuple> dataQuery;
         CriteriaQuery<Long> countQuery;
         CriteriaQuery<Tuple> otherQuery;
 
         QueryPair(CriteriaBuilder criteriaBuilder) {
-            dataQuery = criteriaBuilder.createQuery();
+            dataQuery = criteriaBuilder.createTupleQuery();
             countQuery = criteriaBuilder.createQuery(Long.class);
             otherQuery = criteriaBuilder.createTupleQuery();
         }

@@ -77,6 +77,20 @@ internal class JpaConfig : ImportBeanDefinitionRegistrar, Ordered {
                     "jpaDialect",
                     referenceBean("org.springframework.orm.jpa.vendor.EclipseLinkJpaDialect")
                 )
+            } else if (provider == JpaProvider.Hibernate) {
+                emfDefinition.propertyValues.addPropertyValue(
+                    "persistenceProvider",
+                    referenceBean("org.hibernate.jpa.HibernatePersistenceProvider")
+//                    referenceBean("org.springframework.orm.jpa.vendor.SpringHibernateJpaPersistenceProvider")
+                )
+                // prepareConnection
+                emfDefinition.propertyValues.addPropertyValue(
+                    "jpaDialect",
+                    referenceBean(
+                        "org.springframework.orm.jpa.vendor.HibernateJpaDialect",
+                        mapOf("prepareConnection" to "false")
+                    )
+                )
             }
 
             val mp = ManagedMap<String, TypedStringValue>()
@@ -109,6 +123,8 @@ internal class JpaConfig : ImportBeanDefinitionRegistrar, Ordered {
                 bean.propertyValues.add(t, TypedStringValue(u))
             }
         }
+
+//        bean.propertyValues.addPropertyValue(PropertyValue(""))
         return BeanDefinitionHolder(bean, className + "#" + Integer.toHexString(bean.hashCode()))
     }
 

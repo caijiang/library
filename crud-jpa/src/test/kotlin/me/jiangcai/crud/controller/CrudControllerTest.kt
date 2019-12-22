@@ -1,6 +1,6 @@
 package me.jiangcai.crud.controller
 
-import me.jiangcai.crud.BaseTest2
+import me.jiangcai.crud.AbstractTestBase
 import me.jiangcai.crud.env.entity.Item
 import me.jiangcai.crud.env.entity2.User
 import org.assertj.core.api.Assertions.assertThat
@@ -22,7 +22,7 @@ import kotlin.collections.HashMap
 /**
  * @author CJ
  */
-class CrudControllerTest : BaseTest2() {
+abstract class CrudControllerTest : AbstractTestBase() {
 
     @PersistenceContext
     private lateinit var entityManager: EntityManager
