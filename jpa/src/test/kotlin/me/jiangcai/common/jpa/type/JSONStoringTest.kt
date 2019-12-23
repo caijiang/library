@@ -1,5 +1,6 @@
 package me.jiangcai.common.jpa.type
 
+import me.jiangcai.common.jpa.EclipseLinkH2
 import me.jiangcai.common.jpa.JpaTestConfig
 import me.jiangcai.common.jpa.entity.Foo
 import org.assertj.core.api.Assertions.assertThat
@@ -14,7 +15,7 @@ import javax.persistence.PersistenceContext
 /**
  * @author CJ
  */
-@ContextConfiguration(classes = [JpaTestConfig::class])
+@ContextConfiguration(classes = [JpaTestConfig::class, EclipseLinkH2::class])
 @RunWith(SpringJUnit4ClassRunner::class)
 //@Commit
 open class JSONStoringTest {

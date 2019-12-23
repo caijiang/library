@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author CJ
@@ -56,6 +57,8 @@ public class Item implements CrudFriendly<Long> {
     private Foo foo;
     @ManyToOne
     private BlueBlood blood;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> tags;
 
     @Override
     public Long getId() {
@@ -264,5 +267,13 @@ public class Item implements CrudFriendly<Long> {
 
     public void setBlood(BlueBlood blood) {
         this.blood = blood;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 }

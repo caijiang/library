@@ -1,6 +1,10 @@
 package me.jiangcai.common.jpa
 
+import me.jiangcai.common.jpa.mysql.H2CriteriaFunction
 import me.jiangcai.common.jpa.mysql.MysqlCriteriaFunction
+import org.hibernate.engine.spi.SessionImplementor
+import java.sql.Connection
+import javax.persistence.EntityManager
 import javax.persistence.criteria.CriteriaBuilder
 
 /**
@@ -31,9 +35,28 @@ class CriteriaFunctionBuilder(
         return this
     }
 
+    fun forEntityManager(entityManager: EntityManager): CriteriaFunctionBuilder {
+        try {
+            val con = entityManager.unwrap(Connection::class.java)
+            platform = con.metaData.databaseProductName
+            return this
+        } catch (e: RuntimeException) {
+            //
+            if (entityManager.delegate is SessionImplementor) {
+                val con = (entityManager.delegate as SessionImplementor).connection()
+                platform = con.metaData.databaseProductName
+                return this
+            }
+            throw e
+        }
+    }
+
     fun build(): CriteriaFunction {
         if (platform == null || platform?.equals("mysql", true) == true) {
             return MysqlCriteriaFunction(builder, timezoneDiff)
+        }
+        if (platform == null || platform?.equals("h2", true) == true) {
+            return H2CriteriaFunction(builder, timezoneDiff)
         }
         throw IllegalArgumentException("not support database platform:$platform")
     }

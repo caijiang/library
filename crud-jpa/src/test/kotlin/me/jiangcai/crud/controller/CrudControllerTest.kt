@@ -49,6 +49,7 @@ abstract class CrudControllerTest : AbstractTestBase() {
         val newData = HashMap<String, Any>()
         newData["name"] = "中文呢？"
         newData["other"] = "非标数据"
+        newData["tags"] = listOf("a", "b", "c")
 
         mockMvc.perform(
             post("/items2", userAsRole("X"))
@@ -78,6 +79,7 @@ abstract class CrudControllerTest : AbstractTestBase() {
         )
 //            .andDo(print())
             .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].tags").value("a,b,c"))
 
 //        mockMvc.perform(
 //            get("/items2/ant-d")

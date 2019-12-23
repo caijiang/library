@@ -35,6 +35,11 @@ class ItemController2 : CrudController<Item, Long, Item>(
         builder: FieldBuilder<Item, Item>
     ): List<FieldDefinition<Item>> {
         return listOf(
+            builder.forSelect("tags", { form, cb, cq ->
+                val x = form.joinList<Item, String>("tags")
+//                val y = cb.concat(x,",")
+                cb.function("group_concat", String::class.java, x)
+            }),
             builder.forBuilder { it }
                 .forSelect("name2", { it, _, _ -> it.get<String>("name") }),
 //            Fields.asBasic("id")

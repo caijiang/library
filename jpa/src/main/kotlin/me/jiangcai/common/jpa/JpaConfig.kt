@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.AnnotationAttributes
 import org.springframework.core.type.AnnotationMetadata
+import java.sql.DriverManager
 import java.util.*
 
 /**
@@ -28,6 +29,14 @@ internal class JpaConfig : ImportBeanDefinitionRegistrar, Ordered {
         @Suppress("UNCHECKED_CAST")
         val attributes = data["attributes"] as Array<AnnotationAttributes>
         val useH2TempDataSource = data["useH2TempDataSource"] as Boolean
+        val useMysqlDatabase = data["useMysqlDatabase"]!!.toString().trim()
+
+        val dataSourceClass = try {
+            Class.forName("com.alibaba.druid.pool.DruidDataSource")
+            "com.alibaba.druid.pool.DruidDataSource"
+        } catch (e: ClassNotFoundException) {
+            "org.springframework.jdbc.datasource.DriverManagerDataSource"
+        }
 
         if (registry is ListableBeanFactory) {
             val ps = mutableSetOf<String>()
@@ -42,19 +51,58 @@ internal class JpaConfig : ImportBeanDefinitionRegistrar, Ordered {
             val emfDefinition = RootBeanDefinition()
             emfDefinition.beanClassName = "org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
 
-            if (useH2TempDataSource) {
-                emfDefinition.propertyValues.add(
-                    "dataSource",
-                    referenceBean(
-                        "org.springframework.jdbc.datasource.DriverManagerDataSource",
-                        mapOf(
-                            "driverClassName" to "org.h2.Driver",
-                            "url" to "jdbc:h2:mem:${UUID.randomUUID().toString().replace("-", "")};DB_CLOSE_DELAY=-1"
+            when {
+                useH2TempDataSource -> {
+                    emfDefinition.propertyValues.add(
+                        "dataSource",
+                        referenceBean(
+                            dataSourceClass,
+                            mapOf(
+                                "driverClassName" to "org.h2.Driver",
+                                "url" to "jdbc:h2:mem:${UUID.randomUUID().toString().replace(
+                                    "-",
+                                    ""
+                                )};DB_CLOSE_DELAY=-1"
+                            )
                         )
                     )
-                )
-            } else {
-                emfDefinition.propertyValues.add("dataSource", RuntimeBeanReference(datasource))
+                }
+                useMysqlDatabase.isNotEmpty() -> {
+                    val driver = "com.mysql.jdbc.Driver"
+                    Class.forName(driver)
+
+                    val host = getEnvOrProperty("mysql.host", "localhost")
+                    val url =
+                        "jdbc:mysql://${host}:3306/${useMysqlDatabase}?useUnicode=true&characterEncoding=utf8&useServerPrepStmts=false&autoReconnect=true&useSSL=false"
+
+                    try {
+                        DriverManager.getConnection(url, useMysqlDatabase, useMysqlDatabase).close()
+                    } catch (e: Exception) {
+                        throw IllegalStateException(
+                            "请在本地(3306)建立一个版本何时的数据库实例，并且执行:" +
+                                    "\nCREATE USER '${useMysqlDatabase}'@'%' IDENTIFIED BY '${useMysqlDatabase}';" +
+                                    "\nGRANT ALL on ${useMysqlDatabase}.* to '${useMysqlDatabase}'@'%';" +
+                                    "\nCREATE DATABASE IF NOT EXISTS $useMysqlDatabase CHARACTER SET = utf8;"
+                        )
+                    }
+
+
+                    emfDefinition.propertyValues.add(
+                        "dataSource",
+                        referenceBean(
+                            dataSourceClass,
+                            mapOf(
+                                "driverClassName" to driver,
+                                "url" to url,
+                                "username" to useMysqlDatabase,
+                                "password" to useMysqlDatabase
+                            )
+                        )
+                    )
+                }
+                else -> {
+                    emfDefinition.propertyValues.add("dataSource", RuntimeBeanReference(datasource))
+                }
             }
             // TypedStringValue
             emfDefinition.propertyValues.add(
@@ -98,6 +146,12 @@ internal class JpaConfig : ImportBeanDefinitionRegistrar, Ordered {
                 mp[it.getString("name")] = TypedStringValue(it.getString("value"))
             }
 
+            // 这里设置一些应该固定的属性。
+            if (provider == JpaProvider.Hibernate) {
+                mp["hibernate.dialect_resolvers"] =
+                    TypedStringValue("me.jiangcai.common.jpa.hibernate.MyDialectResolver")
+            }
+
             emfDefinition.propertyValues.addPropertyValue("jpaPropertyMap", mp)
 
             registry.registerBeanDefinition(name(prefix, "entityManagerFactory"), emfDefinition)
@@ -113,6 +167,13 @@ internal class JpaConfig : ImportBeanDefinitionRegistrar, Ordered {
         } else {
             throw IllegalStateException("can not find any JpaPackageScanner.")
         }
+    }
+
+    private fun getEnvOrProperty(name: String, default: String): String {
+        val env = System.getenv(name)
+        if (env != null)
+            return env
+        return System.getProperty(name, default)
     }
 
     private fun referenceBean(className: String, stringProperties: Map<String, String> = emptyMap()): Any {

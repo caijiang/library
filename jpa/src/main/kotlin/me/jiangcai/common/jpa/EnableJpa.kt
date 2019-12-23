@@ -23,6 +23,11 @@ annotation class EnableJpa(
      * 不过我们并没有在类路径里准备好h2。
      */
     val useH2TempDataSource: Boolean = false,
+    /**
+     * 使用临时mysql数据库
+     * 此处应该是数据库的名字，同时也是用户名和密码。
+     */
+    val useMysqlDatabase: String = "",
     val datasourceName: String = "dataSource",
     /**
      * bean名称的前置
@@ -45,8 +50,8 @@ annotation class EnableJpa(
 //        JpaAttribute("eclipselink.session.customizer","me.jiangcai.common.jpa.mysql.UTFSessionCustomizer"),
         JpaAttribute("eclipselink.cache.shared.default", "false"),
         JpaAttribute("hibernate.cache.use_second_level_cache", "false"),
-        JpaAttribute("javax.persistence.schema-generation.database.action", "create"),
-        JpaAttribute("hibernate.hbm2ddl.auto", "update"),
+        JpaAttribute("javax.persistence.schema-generation.database.action", "drop-and-create"),
+        JpaAttribute("hibernate.hbm2ddl.auto", "create-drop"),
 //        validate or update or create or create - drop
         JpaAttribute("eclipselink.weaving", "false"),
         JpaAttribute("eclipselink.logging.level", "FINE"),

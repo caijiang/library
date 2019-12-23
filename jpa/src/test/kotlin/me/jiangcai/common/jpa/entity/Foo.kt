@@ -17,7 +17,7 @@ class Foo {
     var value: BigDecimal? = null
     @Column(columnDefinition = "datetime")
     var created: LocalDateTime = LocalDateTime.now()
-    @Column(columnDefinition = "json")
+    @Column(columnDefinition = "text")
 //    @Convert(converter = JSONStoringConverter::class)
     var goodThing: JSONStoring? = null
 //    @Convert(converter = GoodThingConverter::class)

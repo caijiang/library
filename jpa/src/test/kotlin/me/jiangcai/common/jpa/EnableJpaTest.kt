@@ -43,6 +43,7 @@ class EnableJpaTest {
 
     }
 
+    @EnableJpa(useH2TempDataSource = true)
     @Configuration
     open class Config : JpaTestConfig()
 }

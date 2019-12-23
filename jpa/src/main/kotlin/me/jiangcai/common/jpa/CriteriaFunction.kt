@@ -1,7 +1,10 @@
 package me.jiangcai.common.jpa
 
 import java.math.BigDecimal
-import java.time.*
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.Month
 import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
 import java.time.temporal.WeekFields
@@ -14,9 +17,9 @@ import javax.persistence.criteria.Predicate
  * @author CJ
  */
 @Suppress("UNCHECKED_CAST")
-open class CriteriaFunction(
-    private val builder: CriteriaBuilder,
-    private val timezoneDiff: String = "00:00"
+abstract class CriteriaFunction(
+    val builder: CriteriaBuilder,
+    protected val timezoneDiff: String = "00:00"
 ) {
 
     /**
@@ -37,21 +40,13 @@ open class CriteriaFunction(
 
     private val databaseFriendLyDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.CHINA)
 
-    private fun timezoneFixLocalDateTime(
+    abstract fun timezoneFixLocalDateTime(
         input: Expression<LocalDateTime>
-    ): Expression<LocalDateTime> {
-//        if (timezoneDiff == null)
-//            return input
-        return builder.function("ADDTIME", LocalDateTime::class.java, input, builder.literal(timezoneDiff))
-    }
+    ): Expression<LocalDateTime>
 
-    private fun timezoneFixLocalDate(
+    abstract fun timezoneFixLocalDate(
         input: Expression<LocalDate>
-    ): Expression<LocalDate> {
-//        if (timezoneDiff == null)
-//            return input
-        return builder.function("ADDTIME", LocalDate::class.java, input, builder.literal(timezoneDiff))
-    }
+    ): Expression<LocalDate>
 
     // 三角函数 放在一起吧
 
@@ -175,7 +170,7 @@ open class CriteriaFunction(
      */
     fun <T : Temporal> quarter(arg: Expression<T>): Expression<Int> {
         val m = month(arg)
-        return ceil(builder.quot(m, 3))
+        return ceil(builder.quot(m.`as`(BigDecimal::class.java), builder.literal(BigDecimal.valueOf(3.0))))
     }
 
     /**
@@ -197,39 +192,7 @@ open class CriteriaFunction(
      * @return 年第几周的表达式
      * @see WeekFields.weekOfWeekBasedYear
      */
-    fun <T : Temporal> weekOfYear(arg: Expression<T>, weekFields: WeekFields = WeekFields.ISO): Expression<Int> {
-        val mode = toWeekMode(weekFields)
-        if (arg.javaType == LocalDateTime::class.java)
-            return builder.function(
-                "WEEK",
-                Int::class.java,
-                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>),
-                builder.literal(mode)
-            )
-        if (arg.javaType == LocalDate::class.java)
-            return builder.function(
-                "WEEK",
-                Int::class.java,
-                timezoneFixLocalDate(arg as Expression<LocalDate>),
-                builder.literal(mode)
-            )
-        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
-    }
-
-    private fun toWeekMode(weekFields: WeekFields): Int {
-        return when (weekFields.firstDayOfWeek) {
-            DayOfWeek.MONDAY -> when {
-                weekFields.minimalDaysInFirstWeek >= 4 -> 3
-                else -> 7
-            }
-            DayOfWeek.SUNDAY -> 6
-            //            DayOfWeek.SUNDAY -> when {
-            //                weekFields.minimalDaysInFirstWeek >= 4 -> 4
-            //                else -> 0
-            //            }
-            else -> throw IllegalStateException("周只能从周一或者周日开始")
-        }
-    }
+    abstract fun <T : Temporal> weekOfYear(arg: Expression<T>, weekFields: WeekFields = WeekFields.ISO): Expression<Int>
 
     /**
      * @param arg 本身保存在数据库内的数据的表达式，绝对不支持应用提交的参数
@@ -237,24 +200,8 @@ open class CriteriaFunction(
      * @return 年以及周的联合表达式; 等于 年*100+周
      * @see WeekFields.weekOfWeekBasedYear
      */
-    fun <T : Temporal> yearWeek(arg: Expression<T>, weekFields: WeekFields = WeekFields.ISO): Expression<Int> {
-        val mode = toWeekMode(weekFields)
-        if (arg.javaType == LocalDateTime::class.java)
-            return builder.function(
-                "YEARWEEK",
-                Int::class.java,
-                timezoneFixLocalDateTime(arg as Expression<LocalDateTime>),
-                builder.literal(mode)
-            )
-        if (arg.javaType == LocalDate::class.java)
-            return builder.function(
-                "YEARWEEK",
-                Int::class.java,
-                timezoneFixLocalDate(arg as Expression<LocalDate>),
-                builder.literal(mode)
-            )
-        throw IllegalStateException("unsupported of temporal type: ${arg.javaType}")
-    }
+    abstract fun <T : Temporal> yearWeek(arg: Expression<T>, weekFields: WeekFields = WeekFields.ISO): Expression<Int>
+
     //</editor-fold>
 
 
@@ -351,13 +298,15 @@ open class CriteriaFunction(
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.lessThanOrEqualTo(
                 timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+                , builder.literal(dateTime)
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
             )
         }
         if (arg.javaType == LocalDate::class.java) {
             return builder.lessThanOrEqualTo(
                 timezoneFixLocalDate(arg as Expression<LocalDate>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+                , builder.literal(dateTime.toLocalDate())
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
             )
         }
         throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
@@ -370,13 +319,15 @@ open class CriteriaFunction(
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.lessThan(
                 timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+                , builder.literal(dateTime)
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
             )
         }
         if (arg.javaType == LocalDate::class.java) {
             return builder.lessThan(
                 timezoneFixLocalDate(arg as Expression<LocalDate>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+                , builder.literal(dateTime.toLocalDate())
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
             )
         }
         throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
@@ -389,13 +340,15 @@ open class CriteriaFunction(
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.greaterThan(
                 timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+                , builder.literal(dateTime)
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
             )
         }
         if (arg.javaType == LocalDate::class.java) {
             return builder.greaterThan(
                 timezoneFixLocalDate(arg as Expression<LocalDate>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+                , builder.literal(dateTime.toLocalDate())
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
             )
         }
         throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
@@ -408,13 +361,15 @@ open class CriteriaFunction(
         if (arg.javaType == LocalDateTime::class.java) {
             return builder.greaterThanOrEqualTo(
                 timezoneFixLocalDateTime(arg as Expression<LocalDateTime>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
+                , builder.literal(dateTime)
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDateTime::class.java)
             )
         }
         if (arg.javaType == LocalDate::class.java) {
             return builder.greaterThanOrEqualTo(
                 timezoneFixLocalDate(arg as Expression<LocalDate>)
-                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
+                , builder.literal(dateTime.toLocalDate())
+//                , builder.literal(databaseFriendFullDateFormatter.format(dateTime)).`as`(LocalDate::class.java)
             )
         }
         throw IllegalStateException("unsupported for temporal type:${arg.javaType}")
@@ -480,12 +435,10 @@ open class CriteriaFunction(
     //<editor-fold desc="时间段的比较">
     //    时间段的比较，一般是指from,to,范围
 
-    private fun durationInSeconds(from: Expression<LocalDateTime>, to: Expression<*>): Expression<Int> {
-        return builder.diff(
-            builder.function("to_seconds", Int::class.java, to),
-            builder.function("to_seconds", Int::class.java, from)
-        )
-    }
+    /**
+     * @return 两个输入时间的秒差。
+     */
+    abstract fun durationInSeconds(from: Expression<LocalDateTime>, to: Expression<*>): Expression<Int>
 
     /**
      * @param from 开始时刻
