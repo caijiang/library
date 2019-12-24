@@ -4,6 +4,7 @@ import me.jiangcai.common.jpa.entity.Foo
 import me.jiangcai.common.jpa.entity.Foo_
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Offset
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,6 +21,7 @@ import java.time.temporal.WeekFields
 import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
 import javax.persistence.criteria.Expression
+import javax.persistence.criteria.JoinType
 import javax.persistence.criteria.Root
 import kotlin.math.ceil
 import kotlin.random.Random
@@ -565,6 +567,70 @@ abstract class CriteriaFunctionBuilderTest {
                 ).singleResult
             )
                 .isEqualTo(1)
+        }
+    }
+
+    @Test
+    @Ignore
+    fun groupConcat() {
+        runInTx { entityManager ->
+            val f1 = Foo()
+            entityManager.persist(f1)
+            entityManager.flush()
+
+            val cb = entityManager.criteriaBuilder
+//            val b = CriteriaFunctionBuilder(cb).build()
+            val cq = cb.createTupleQuery()
+            val root = cq.from(Foo::class.java)
+
+            assertThat(
+                entityManager.createQuery(
+                    cq
+                        .multiselect(
+                            root.get<Long>("id"),
+                            cb.groupConcat(root.joinList<Foo, String>("tags", JoinType.LEFT))
+                        )
+//                        .where(cb.equal(root.get<Long>("id"), f1.id))
+                        .groupBy(root.get<Long>("id"))
+                ).setMaxResults(1).singleResult
+                    .get(1)
+            )
+
+                .isNull()
+
+            f1.tags = listOf("a").toMutableList()
+            entityManager.merge(f1)
+
+            assertThat(
+                entityManager.createQuery(
+                    cq
+                        .multiselect(
+                            root.get<Long>("id"),
+                            cb.groupConcat(root.joinList<Foo, String>("tags", JoinType.LEFT))
+                        )
+                        .where(cb.equal(root.get<Long>("id"), f1.id))
+                        .groupBy(root.get<Long>("id"))
+                ).setMaxResults(1).singleResult
+                    .get(1)
+            )
+                .isEqualTo("a")
+
+            f1.tags = listOf("a", "b", "c").toMutableList()
+            entityManager.merge(f1)
+
+            assertThat(
+                entityManager.createQuery(
+                    cq
+                        .multiselect(
+                            root.get<Long>("id"),
+                            cb.groupConcat(root.joinList<Foo, String>("tags", JoinType.LEFT))
+                        )
+                        .where(cb.equal(root.get<Long>("id"), f1.id))
+                        .groupBy(root.get<Long>("id"))
+                ).setMaxResults(1).singleResult
+                    .get(1)
+            )
+                .isEqualTo("a,b,c")
         }
     }
 

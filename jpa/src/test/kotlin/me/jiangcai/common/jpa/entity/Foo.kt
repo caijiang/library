@@ -15,6 +15,8 @@ class Foo {
     var id: Long? = null
     @Column(precision = 12, scale = 10)
     var value: BigDecimal? = null
+    @ElementCollection
+    var tags: List<String> = mutableListOf()
     @Column(columnDefinition = "datetime")
     var created: LocalDateTime = LocalDateTime.now()
     @Column(columnDefinition = "text")
