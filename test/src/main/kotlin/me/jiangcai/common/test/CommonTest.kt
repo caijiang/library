@@ -34,7 +34,7 @@ abstract class CommonTest {
         return random.nextEmailAddress()
     }
 
-    protected fun nextDomain(): String {
+    protected fun randomDomain(): String {
         return random.nextDomain()
     }
 
