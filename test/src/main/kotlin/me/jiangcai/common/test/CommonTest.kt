@@ -1,6 +1,7 @@
 package me.jiangcai.common.test
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import me.jiangcai.common.ext.nextDomain
 import me.jiangcai.common.ext.nextEmailAddress
 import me.jiangcai.common.ext.nextHttpURL
 import me.jiangcai.common.ext.nextMobileOfChina
@@ -31,6 +32,10 @@ abstract class CommonTest {
      */
     protected fun randomEmailAddress(): String {
         return random.nextEmailAddress()
+    }
+
+    protected fun nextDomain(): String {
+        return random.nextDomain()
     }
 
     protected fun randomMobile(): String {

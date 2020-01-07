@@ -21,6 +21,13 @@ fun Random.nextHttpURL(): String {
 }
 
 /**
+ * @return 随机一个域名
+ */
+fun Random.nextDomain(): String {
+    return RandomStringUtils.randomAlphabetic(nextInt(5) + 3) + "." + RandomStringUtils.randomAlphabetic(nextInt(5) + 3)
+}
+
+/**
  * @return 随机email 地址
  * @author CJ
  */
