@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.PropertySource
+import org.springframework.core.io.ClassPathResource
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import java.io.ByteArrayInputStream
@@ -66,6 +67,21 @@ abstract class AbstractResourceServiceTest {
         resourceService.deleteResource(path2)
 
 
+        withImage(ClassPathResource("example.png"), "png")
+        withImage(ClassPathResource("example.jpeg"), "jpeg")
+
+
+    }
+
+    private fun withImage(image: ClassPathResource, type: String) {
+        val base = UUID.randomUUID().toString().replace("-", "")
+        val rs = resourceService.uploadImage(base, image.inputStream, preview = 10, browse = 20, origin = true)
+        assertThat(rs.previewUrl).isNotNull()
+        assertThat(rs.browseUrl).isNotNull()
+        assertThat(rs.originUrl)
+            .isNotNull()
+            .endsWith(type)
+        resourceService.deleteImage(base)
     }
 
     @Import(ResourceSpringConfig::class)

@@ -1,7 +1,6 @@
 package me.jiangcai.common.resource.bean
 
 import me.jiangcai.common.resource.Resource
-import me.jiangcai.common.resource.ResourceService
 import me.jiangcai.common.resource.impl.LocalResource
 import me.jiangcai.common.resource.impl.VFSResource
 import org.apache.commons.logging.LogFactory
@@ -25,7 +24,7 @@ import java.nio.file.StandardCopyOption
  * @author CJ
  */
 @Service
-class VFSResourceService : ResourceService {
+class VFSResourceService : AbstractResourceService {
 
     companion object {
         private const val ServletContextResourcePath = "/_resources"
