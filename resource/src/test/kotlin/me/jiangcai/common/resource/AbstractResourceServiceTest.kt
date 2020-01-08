@@ -81,6 +81,7 @@ abstract class AbstractResourceServiceTest {
         assertThat(rs.originUrl)
             .isNotNull()
             .endsWith(type)
+        println(rs.originUrl)
         resourceService.deleteImage(base)
     }
 
@@ -91,4 +92,8 @@ abstract class AbstractResourceServiceTest {
     @Import(ResourceSpringConfig::class)
     @PropertySource(name = "resourceLD", value = ["classpath:/remoteResource.properties"])
     class RemoteResourceServiceTestConfig
+
+    @Import(ResourceSpringConfig::class)
+    @PropertySource(name = "resourceLD", value = ["classpath:/ossResource.properties"])
+    class OSSResourceServiceTestConfig
 }

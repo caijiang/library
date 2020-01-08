@@ -7,7 +7,6 @@ import org.apache.commons.logging.LogFactory
 import org.apache.commons.vfs2.FileSystemException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
-import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
 import org.springframework.web.context.WebApplicationContext
 import java.io.File
@@ -23,7 +22,6 @@ import java.nio.file.StandardCopyOption
 /**
  * @author CJ
  */
-@Service
 class VFSResourceService : AbstractResourceService {
 
     companion object {
@@ -40,7 +38,7 @@ class VFSResourceService : AbstractResourceService {
     private lateinit var vfsHelper: VFSHelper
 
     @Autowired(required = false)
-    constructor(environment: Environment, webApplicationContext: WebApplicationContext)
+    constructor(environment: Environment, webApplicationContext: WebApplicationContext?)
             : this(
         environment.getProperty(
             "jiangcai.resource.http.uri",
