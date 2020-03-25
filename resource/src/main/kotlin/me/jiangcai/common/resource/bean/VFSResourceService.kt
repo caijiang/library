@@ -77,10 +77,7 @@ class VFSResourceService : AbstractResourceService {
                 throw IllegalStateException("ResourceService required web Environment.")
             newUri = try {
                 "http://" + webApplicationContext.servletContext.virtualServerName
-            } catch (ignored: AbstractMethodError) {
-                log.warn("ResourceService can not use getVirtualServerName in Servlet Version < 3.1. ")
-                "http://localhost"
-            } catch (ignored: NoSuchMethodError) {
+            } catch (ignored: Throwable) {
                 log.warn("ResourceService can not use getVirtualServerName in Servlet Version < 3.1. ")
                 "http://localhost"
             }

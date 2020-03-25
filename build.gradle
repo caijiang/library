@@ -6,14 +6,14 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            url "http://repo.spring.io/plugins-release/"
+            url "https://plugins.gradle.org/m2/"
         }
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath group: 'org.hibernate.build.gradle', name: 'gradle-maven-publish-auth', version: '2.0.1'
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.16"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.17"
     }
 }
 
