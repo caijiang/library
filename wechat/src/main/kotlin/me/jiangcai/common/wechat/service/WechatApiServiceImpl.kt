@@ -1,6 +1,5 @@
 package me.jiangcai.common.wechat.service
 
-import me.jiangcai.common.ext.help.findOptionalOne
 import me.jiangcai.common.wechat.WechatAccountAuthorization
 import me.jiangcai.common.wechat.WechatApiService
 import me.jiangcai.common.wechat.entity.WechatAccount
@@ -15,6 +14,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Service
 import java.security.MessageDigest
@@ -62,7 +62,7 @@ class WechatApiServiceImpl(
             val openid = rs.getStringOrError("openid")
             val sessionKey = rs.getStringOrError("session_key")
 
-            val usr = wechatUserRepository.findOptionalOne(
+            val usr = wechatUserRepository.findByIdOrNull(
                 WechatUserPK(
                     authorization.miniAppId, openid
                 )
@@ -95,7 +95,7 @@ class WechatApiServiceImpl(
                 )
 
                 // 有则改之，无则加勉
-                val user = wechatUserRepository.findOptionalOne(WechatUserPK(authorization.accountAppId, openid))
+                val user = wechatUserRepository.findByIdOrNull(WechatUserPK(authorization.accountAppId, openid))
                     ?: WechatUser(
                         appId = authorization.accountAppId,
                         openId = openid
@@ -148,7 +148,7 @@ class WechatApiServiceImpl(
         if (authorization.accountAppId == null || authorization.accountAppSecret == null)
             throw IllegalStateException("非法的 WechatAccountAuthorization 缺少公众号")
 
-        val account = wechatAccountRepository.findOptionalOne(authorization.accountAppId)
+        val account = wechatAccountRepository.findByIdOrNull(authorization.accountAppId)
             ?: WechatAccount((authorization.accountAppId))
 
         if (account.javascriptTicket != null && account.javascriptTimeToExpire != null && account.javascriptTimeToExpire!!.isBefore(

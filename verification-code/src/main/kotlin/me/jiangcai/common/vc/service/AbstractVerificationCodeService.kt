@@ -1,6 +1,5 @@
 package me.jiangcai.common.vc.service
 
-import me.jiangcai.common.ext.help.findOptionalOne
 import me.jiangcai.common.ss.SystemStringService
 import me.jiangcai.common.vc.FrequentlySendException
 import me.jiangcai.common.vc.IllegalVerificationCodeException
@@ -14,6 +13,7 @@ import me.jiangcai.common.vc.repository.VerificationCodeRepository
 import me.jiangcai.lib.notice.Content
 import me.jiangcai.lib.notice.NoticeSender
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import java.io.IOException
 import java.util.*
 
@@ -54,7 +54,7 @@ abstract class AbstractVerificationCodeService : VerificationCodeService {
             ) throw IllegalVerificationCodeException(type)
         } else {
             val verificationCode: VerificationCode =
-                verificationCodeRepository.findOptionalOne(VerificationCodePK(mobile, type))
+                verificationCodeRepository.findByIdOrNull(VerificationCodePK(mobile, type))
                     ?: throw IllegalVerificationCodeException(type)
             if (instance.after(verificationCode.sendTime)) throw IllegalVerificationCodeException(type)
             if (code == getSuperCode()) {
@@ -97,10 +97,9 @@ abstract class AbstractVerificationCodeService : VerificationCodeService {
             lastYear.add(Calendar.YEAR, -1)
 
             val verificationCode =
-                verificationCodeRepository.findOptionalOne(VerificationCodePK(mobile, type))
-                    ?: VerificationCode(
-                        mobile = mobile, type = type.id(), code = "", sendTime = lastYear
-                    )
+                verificationCodeRepository.findByIdOrNull(VerificationCodePK(mobile, type)) ?: VerificationCode(
+                    mobile = mobile, type = type.id(), code = "", sendTime = lastYear
+                )
 
             if (instance.before(verificationCode.sendTime)) throw FrequentlySendException("短时间内不可以重复发送。")
             val code = generateCode(mobile, type)

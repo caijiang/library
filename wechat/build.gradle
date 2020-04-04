@@ -1,3 +1,11 @@
+buildscript {
+    ext.spring_framework = "5.2.4.RELEASE"
+    ext.spring_data = "2.2.5.RELEASE"
+    ext.spring_boot = "2.2.5.RELEASE"
+    ext.spring_security = "5.2.2.RELEASE"
+    ext.jackson = '2.10.2'
+}
+
 group 'me.jiangcai.common'
 version '1.0.0-SNAPSHOT'
 
@@ -17,36 +25,27 @@ dependencies {
     kapt "org.hibernate:hibernate-jpamodelgen:$hibernate_version"
     compileOnly "javax:javaee-api:$javaee_version"
     api project(':ext')
-//    api project(':classic-login')
-//    api project(':crud-jpa')
-//    testApi project(':classic-login').sourceSets.test.output
-
-//    compile "me.jiangcai.wx:weixin-web:2.3.0-SNAPSHOT"
-//    testCompile "me.jiangcai.wx:weixin-test:2.3.0-SNAPSHOT"
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jackson"
     implementation "org.apache.httpcomponents:httpcore:4.4"
     implementation "org.apache.httpcomponents:httpclient:4.4"
-    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
-    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.0.4.RELEASE'
-    compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.0.4.RELEASE'
-    compile group: 'org.springframework', name: 'spring-web', version: '4.3.8.RELEASE'
-    compile group: 'org.springframework', name: 'spring-tx', version: '4.3.8.RELEASE'
-    testCompile group: 'org.springframework.security', name: 'spring-security-config', version: '4.0.4.RELEASE'
-    testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
-    testCompile group: 'org.springframework', name: 'spring-context', version: '4.3.8.RELEASE'
-    testCompile group: 'org.springframework', name: 'spring-orm', version: '4.3.8.RELEASE'
-//    testCompile group: 'org.springframework', name: 'spring-webmvc', version: '4.3.8.RELEASE'
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: "$spring_data"
+    compile group: 'org.springframework.security', name: 'spring-security-web', version: "$spring_security"
+//    compile group: 'org.springframework', name: 'spring-web', version: "$spring_framework"
+//    compile group: 'org.springframework', name: 'spring-tx', version: "$spring_framework"
+
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
     testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
     testRuntime group: 'mysql', name: 'mysql-connector-java', version: '5.1.40'
-    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
-    testCompile project(':test')
+    testCompile "javax:javaee-api:8.0"
     testCompile project(':jpa')
 
-    testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
-    testCompile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
+    testCompile group: 'org.springframework.security', name: 'spring-security-test', version: "$spring_security"
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: "$spring_boot"
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "$spring_boot"
+    testCompile('org.springframework.boot:spring-boot-starter-test:' + "$spring_boot") {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
 }
 
 repositories {

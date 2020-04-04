@@ -52,8 +52,10 @@ class VerificationCodeSpringConfig(
                 root.get("sendTime"),
                 calendar
             )
-        }.forEach {
-            verificationCodeMultipleRepository.delete(it)
         }
+            .filterNotNull()
+            .forEach {
+                verificationCodeMultipleRepository.delete(it)
+            }
     }
 }

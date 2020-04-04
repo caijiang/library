@@ -1,22 +1,33 @@
 package me.jiangcai.common.wechat
 
-import me.jiangcai.common.test.MvcTest
-import org.junit.Ignore
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 /**
  * @author CJ
  */
+@SpringBootTest
+@AutoConfigureMockMvc
 @Suppress("NonAsciiCharacters", "TestFunctionName")
 @ContextConfiguration(classes = [Config::class])
-class WechatSpringConfigTest : MvcTest() {
+internal class WechatSpringConfigTest {
+
+    @Autowired
+    private var mockMvc: MockMvc? = null
+
 
     @Test
     fun go() {
-        mockMvc.perform(
+        mockMvc!!.perform(
             post("/webSignature")
                 .param("url", "http://www.baidu.com")
         )
@@ -28,11 +39,10 @@ class WechatSpringConfigTest : MvcTest() {
             .andExpect(jsonPath("$.signature").isString)
     }
 
-    @Test
-    @Ignore
+    //    @Test
     fun 小程序授权() {
         // http://api.mingshz.com/project/23/interface/api/64
-        mockMvc.perform(
+        mockMvc!!.perform(
             get("/loginAsWechatApp")
                 .param("code", "061QMmWZ0fVG6U1zMhUZ0xO3WZ0QMmWw")
         )

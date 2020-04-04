@@ -1,3 +1,11 @@
+buildscript {
+    ext.spring_framework = "5.2.4.RELEASE"
+    ext.spring_data = "2.2.5.RELEASE"
+    ext.spring_boot = "2.2.5.RELEASE"
+    ext.spring_security = "5.2.2.RELEASE"
+    ext.jackson = '2.10.2'
+}
+
 group 'me.jiangcai.common'
 version '1.0.0-SNAPSHOT'
 
@@ -23,7 +31,7 @@ dependencies {
 //    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
 //    implementation "org.apache.httpcomponents:httpcore:4.4"
 //    implementation "org.apache.httpcomponents:httpclient:4.4"
-    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: "$spring_data"
 //    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.0.4.RELEASE'
 //    compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.0.4.RELEASE'
 //    compile group: 'org.springframework', name: 'spring-web', version: '4.3.8.RELEASE'
