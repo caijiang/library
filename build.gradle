@@ -11,6 +11,8 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlin_version"
+        //noinspection DifferentKotlinGradleVersion
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath group: 'org.hibernate.build.gradle', name: 'gradle-maven-publish-auth', version: '2.0.1'
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.17"
@@ -104,7 +106,7 @@ subprojects {
     }
 
     task packageJavadoc(type: Jar) {
-        from dokka
+        from dokka as Object
         classifier = 'javadoc'
     }
 
