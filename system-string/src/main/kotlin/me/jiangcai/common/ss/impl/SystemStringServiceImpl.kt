@@ -22,7 +22,7 @@ import java.util.*
  * @author CJ
  */
 @Service("systemStringService")
-class SystemStringServiceImpl(
+open class SystemStringServiceImpl(
     @Autowired
     private val applicationEventPublisher: ApplicationEventPublisher,
     @Autowired

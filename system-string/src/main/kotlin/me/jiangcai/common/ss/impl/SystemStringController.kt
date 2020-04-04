@@ -24,7 +24,7 @@ open class SystemStringController(
 ) {
 
 
-    @GetMapping("\${jiangcai.ss.uri}")
+    @GetMapping("\${jiangcai.ss.uri:/systemString}")
     @Transactional(readOnly = true)
     open fun index(model: Model): String {
         model.addAttribute("uri", environment.getRequiredProperty("jiangcai.ss.uri"))
@@ -32,14 +32,14 @@ open class SystemStringController(
         return "thymeleaf:classpath:/me/jiangcai/common/ss"
     }
 
-    @DeleteMapping("\${jiangcai.ss.uri}")
+    @DeleteMapping("\${jiangcai.ss.uri:/systemString}")
     @Transactional
     @ResponseStatus(HttpStatus.NO_CONTENT)
     open fun delete(id: String) {
         systemStringService.delete(id)
     }
 
-    @PutMapping("\${jiangcai.ss.uri}")
+    @PutMapping("\${jiangcai.ss.uri:/systemString}")
     @Transactional
     @ResponseStatus(HttpStatus.NO_CONTENT)
     open fun put(id: String, @RequestBody value: String) {
