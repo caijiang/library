@@ -1,0 +1,50 @@
+group 'me.jiangcai.common'
+version '1.0.0-SNAPSHOT'
+
+apply plugin: 'kotlin-kapt'
+apply plugin: "org.jetbrains.kotlin.plugin.spring"
+apply plugin: "org.jetbrains.kotlin.plugin.jpa"
+
+noArg {
+    annotation("me.jiangcai.common.ext.annotations.NoArgsConstructor")
+}
+
+allOpen {
+    annotation("me.jiangcai.common.ext.annotations.AllOpenClass")
+}
+
+dependencies {
+    kapt "org.hibernate:hibernate-jpamodelgen:$hibernate_version"
+    compileOnly "javax:javaee-api:$javaee_version"
+
+    api project(':ext')
+    api project(':system-string')
+    implementation "me.jiangcai.lib.notice:notice-api:5.1"
+//    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
+//    implementation "org.apache.httpcomponents:httpcore:4.4"
+//    implementation "org.apache.httpcomponents:httpclient:4.4"
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
+//    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.0.4.RELEASE'
+//    compile group: 'org.springframework.security', name: 'spring-security-web', version: '4.0.4.RELEASE'
+//    compile group: 'org.springframework', name: 'spring-web', version: '4.3.8.RELEASE'
+//    compile group: 'org.springframework', name: 'spring-tx', version: '4.3.8.RELEASE'
+
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.springframework.security', name: 'spring-security-config', version: '4.0.4.RELEASE'
+    testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.8.RELEASE'
+    testCompile group: 'org.springframework', name: 'spring-context', version: '4.3.8.RELEASE'
+    testCompile group: 'org.springframework', name: 'spring-orm', version: '4.3.8.RELEASE'
+    testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
+    testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
+    testRuntime group: 'mysql', name: 'mysql-connector-java', version: '5.1.40'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+    testCompile project(':test')
+    testCompile project(':jpa')
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
+}
+
+repositories {
+    maven { url 'https://jitpack.io' }
+}

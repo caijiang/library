@@ -16,4 +16,4 @@ include 'qr'
 include 'owner'
 include 'mvc-spy'
 include 'wechat'
-
+include 'verification-code'

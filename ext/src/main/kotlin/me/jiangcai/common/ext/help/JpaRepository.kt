@@ -1,4 +1,4 @@
-package me.jiangcai.common.wechat
+package me.jiangcai.common.ext.help
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException
