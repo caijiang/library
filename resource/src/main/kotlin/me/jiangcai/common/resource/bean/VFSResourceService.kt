@@ -1,5 +1,6 @@
 package me.jiangcai.common.resource.bean
 
+import me.jiangcai.common.resource.DevelopmentConfig
 import me.jiangcai.common.resource.Resource
 import me.jiangcai.common.resource.impl.LocalResource
 import me.jiangcai.common.resource.impl.VFSResource
@@ -7,7 +8,6 @@ import org.apache.commons.logging.LogFactory
 import org.apache.commons.vfs2.FileSystemException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
-import org.springframework.util.StringUtils
 import org.springframework.web.context.WebApplicationContext
 import java.io.File
 import java.io.IOException
@@ -22,10 +22,11 @@ import java.nio.file.StandardCopyOption
 /**
  * @author CJ
  */
+@Suppress("SpringJavaAutowiredMembersInspection")
 class VFSResourceService : AbstractResourceService {
 
     companion object {
-        private const val ServletContextResourcePath = "/_resources"
+        const val ServletContextResourcePath = "/_resources"
     }
 
     private val log = LogFactory.getLog(VFSResourceService::class.java)
@@ -34,21 +35,24 @@ class VFSResourceService : AbstractResourceService {
     private var localFileMode: Boolean = false
     private var fileHome: URI? = null
     private var fileFile: File? = null
+
     @Autowired
     private lateinit var vfsHelper: VFSHelper
 
-    @Autowired(required = false)
+    //    @Autowired(required = false)
     constructor(environment: Environment, webApplicationContext: WebApplicationContext?)
             : this(
+        environment.acceptsProfiles("development"),
+        environment.getProperty("jiangcai.resource.host", "localhost"),
         environment.getProperty(
             "jiangcai.resource.http.uri",
-            environment.getProperty("me.jiangcai.lib.resource.http.uri", null as String?)
+            environment.getProperty("me.jiangcai.lib.resource.http.uri")
         ),
         environment.getProperty(
             "jiangcai.resource.home",
-            environment.getProperty("me.jiangcai.lib.resource.home", null as String?)
+            environment.getProperty("me.jiangcai.lib.resource.home")
         ),
-        environment.getProperty("me.jiangcai.server.port", Int::class.java, 8080),
+        environment.getProperty("server.port", Int::class.java, 8080),
         webApplicationContext,
         "jiangcai.resource"
     )
@@ -61,6 +65,8 @@ class VFSResourceService : AbstractResourceService {
      * @param prefix                系统属性的前缀,保留应用中存在多个资源管理系统的可能
      */
     constructor(
+        development: Boolean,
+        developmentHost: String,
         uri: String?,
         home: String?,
         port: Int,
@@ -68,28 +74,37 @@ class VFSResourceService : AbstractResourceService {
         prefix: String
     ) {
         // 应该先构建字符串,再根据值判断是否未本地系统(file)
-
-        val autoHome = StringUtils.isEmpty(uri) || StringUtils.isEmpty(home)
+        val autoHome = uri.isNullOrEmpty() || home.isNullOrEmpty()
         var newHome: String
         var newUri: String
         if (autoHome) {
-            if (webApplicationContext == null)
-                throw IllegalStateException("ResourceService required web Environment.")
-            newUri = try {
-                "http://" + webApplicationContext.servletContext.virtualServerName
-            } catch (ignored: Throwable) {
-                log.warn("ResourceService can not use getVirtualServerName in Servlet Version < 3.1. ")
-                "http://localhost"
-            }
+            val suffix =
+                if (port == 80)
+                    ""
+                else
+                    ":${port}"
 
-            if (port != 80)
-                newUri = "$newUri:$port"
-            newUri = "$newUri$ServletContextResourcePath/"
-            newHome = webApplicationContext.servletContext.getRealPath(ServletContextResourcePath)
-            log.warn(
-                "ResourceService running in ServletContextPath, please setup " + prefix + ".http.uri" + ","
-                        + prefix + ".home to define VFS ResourceService"
-            )
+            if (development) {
+                log.warn("ResourceService working in Development mode.")
+                newUri = "http://${developmentHost}$suffix$ServletContextResourcePath"
+                newHome = DevelopmentConfig.getResourcesHome()
+            } else {
+                if (webApplicationContext == null)
+                    throw IllegalStateException("ResourceService required web Environment.")
+                newUri = try {
+                    "http://" + webApplicationContext.servletContext.virtualServerName + suffix + ServletContextResourcePath
+                } catch (ignored: Throwable) {
+                    log.warn("ResourceService can not use getVirtualServerName in Servlet Version < 3.1. ")
+                    "http://localhost$suffix$ServletContextResourcePath"
+                }
+
+                newHome = webApplicationContext.servletContext.getRealPath(ServletContextResourcePath)
+                log.warn(
+                    "ResourceService running in ServletContextPath, please setup " + prefix + ".http.uri" + ","
+                            + prefix + ".home to define VFS ResourceService"
+                )
+
+            }
 
         } else {
             newHome = home!!

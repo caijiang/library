@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.web.context.WebApplicationContext
 
@@ -22,10 +23,12 @@ import org.springframework.web.context.WebApplicationContext
  * ### 本地或者 VFS
  * * jiangcai.resource.http.uri 资源http可访问地址 比如 http://www.hello.com/resources
  * * jiangcai.resource.home 资源的实际保存位置 比如 /var/rs 也支持远程服务器 sftp://user:host/home/user
+ * * jiangcai.resource.host 临时访问主机名称，只在 development 环境中生效
  *
  * @author CJ
  */
 @Configuration
+@Import(DevelopmentConfig::class)
 @ComponentScan("me.jiangcai.common.resource.bean")
 open class ResourceSpringConfig(
     @Autowired
