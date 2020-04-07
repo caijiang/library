@@ -25,6 +25,7 @@ dependencies {
     kapt "org.hibernate:hibernate-jpamodelgen:$hibernate_version"
     compileOnly "javax:javaee-api:$javaee_version"
     api project(':ext')
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.64'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "$jackson"
     implementation "org.apache.httpcomponents:httpcore:4.4"
     implementation "org.apache.httpcomponents:httpclient:4.4"

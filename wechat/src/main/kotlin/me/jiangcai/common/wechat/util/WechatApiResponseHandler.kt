@@ -10,7 +10,7 @@ import org.apache.http.impl.client.AbstractResponseHandler
 class WechatApiResponseHandler : AbstractResponseHandler<WechatResponse>() {
 
     companion object {
-        private val objectMapper = ObjectMapper()
+        val objectMapper = ObjectMapper()
     }
 
     override fun handleEntity(entity: HttpEntity): WechatResponse {

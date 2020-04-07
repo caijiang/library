@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.security.test.context.support.WithUserDetails
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -39,7 +40,29 @@ internal class WechatSpringConfigTest {
             .andExpect(jsonPath("$.signature").isString)
     }
 
+//    @BeforeEach
+
+    @Test
+    @WithUserDetails(userDetailsServiceBeanName = "decryptDataTestUserService")
+    fun 小程序获取个人敏感信息() {
+        // 首先已经登录了……
+        // 提交用户详情，并且获得 unionId
+        mockMvc!!.perform(
+            post("/wechatMiniDecryptDataForUserInfo")
+                .param(
+                    "encryptedData",
+                    "u3jx0xTqw4r1vb/Qh7e878NZMmKLGTNQN5eTdRll1c7uYNPggn+LoRLbMXBSLtgjmuSoviOdEE+OrG1QI8x2MhGZ+7JVXTwqmcae/PjwBlTCoul16TeYHjjTEwZnMly68R6+tW8hnRT1uRYmMq2D6tQoLJIEVFaIB+qNnXfhMoaZ6DCxA14BmpJp/+vGIOdGOgIK9ShYThJsnBgWPKGsb+D1B0nERqAAggKY6OKLJC+ga02jnfWxVJ1ccLtT8tPfovRjN/qXjhLrNDKzqJacQjCb3oa9NvkABpWP/IideW2/ALiBLNWDrgMuLNqHvKi2bw96cMIoLks32V9REl5YMxj/Wk0DoUP1enAY5kArj7tfObBBWUDVfbMxhRD5272QEG7pYXprN9qpaVKoJNO1AND3yQocWcxiogyEZVlu4LSjjKIawEXMBwKBOV+pkoL9wwCpRokUe/6MvqEOokLKDk694b0guBY4048sVVf2aRU="
+                )
+                .param("iv", "gqQU0rsYbhxo54CKuG9dUA==")
+        )
+//            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.nickname").isString)
+
+    }
+
     //    @Test
+    @Suppress("unused")
     fun 小程序授权() {
         // http://api.mingshz.com/project/23/interface/api/64
         mockMvc!!.perform(

@@ -12,5 +12,9 @@ interface WechatWebUserDetailsService {
      * 微信身份有了，给一个系统身份
      */
     @Throws(UsernameNotFoundException::class)
-    fun findByWechatUser(user: WechatUser): UserDetails
+    fun findByWechatUser(user: WechatUser): WechatUserAware
+}
+
+interface WechatUserAware : UserDetails {
+    fun toWechatUser(): WechatUser
 }

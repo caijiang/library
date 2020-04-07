@@ -27,5 +27,9 @@ data class WechatResponse(
         return root.get(key)?.textValue()
     }
 
+    fun getOptionalInt(key: String): Int? {
+        return root.get(key)?.intValue()
+    }
+
 
 }

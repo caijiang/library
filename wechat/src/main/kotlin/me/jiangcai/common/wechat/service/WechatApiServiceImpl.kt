@@ -8,18 +8,29 @@ import me.jiangcai.common.wechat.entity.WechatUserPK
 import me.jiangcai.common.wechat.repository.WechatAccountRepository
 import me.jiangcai.common.wechat.repository.WechatUserRepository
 import me.jiangcai.common.wechat.util.WechatApiResponseHandler
+import me.jiangcai.common.wechat.util.WechatResponse
 import org.apache.commons.logging.LogFactory
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Service
+import java.security.AlgorithmParameters
+import java.security.InvalidKeyException
 import java.security.MessageDigest
+import java.security.Security
+import java.security.spec.InvalidParameterSpecException
 import java.time.LocalDateTime
 import java.util.*
+import javax.crypto.BadPaddingException
+import javax.crypto.Cipher
+import javax.crypto.IllegalBlockSizeException
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * @author CJ
@@ -44,6 +55,79 @@ class WechatApiServiceImpl(
                     .build()
             )
             .build()
+    }
+
+    init {
+        Security.addProvider(BouncyCastleProvider())
+    }
+
+    override fun miniDecryptData(user: WechatUser, encryptedData: String, iv: String): WechatUser {
+        val entity = wechatUserRepository.getOne(WechatUserPK(user.appId, user.openId))
+
+        val base64Decoder = Base64.getDecoder()
+        val sessionKey = base64Decoder.decode(entity.miniSessionKey)
+        val encryptedDataByte = base64Decoder.decode(encryptedData)
+        // aes-128-cbc
+        val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
+
+        try {
+            // iv 1
+            val params = AlgorithmParameters.getInstance("AES")
+            params.init(IvParameterSpec(base64Decoder.decode(iv)))
+
+            // iv 2
+//        val params =  IvParameterSpec(base64Decoder.decode(iv))
+            cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(sessionKey, "AES"), params)
+
+            val rawData = cipher.doFinal(encryptedDataByte)
+
+            val root = WechatApiResponseHandler.objectMapper.readTree(rawData)
+
+            val watermark = root["watermark"] ?: throw  IllegalArgumentException("缺少水印")
+            if (watermark["appid"]?.textValue() != entity.appId) {
+                throw  IllegalArgumentException("水印错误")
+            }
+
+            val response = WechatResponse(
+                root
+            )
+            // 手机号码
+            //  "phoneNumber": "13580006666",
+            //    "purePhoneNumber": "13580006666",
+            //    "countryCode": "86",
+
+            response.getOptionalString("nickName")?.let {
+                entity.nickname = it
+            }
+            response.getOptionalInt("gender")?.let {
+                entity.sex = it
+            }
+            response.getOptionalString("city")?.let {
+                entity.city = it
+            }
+            response.getOptionalString("province")?.let {
+                entity.province = it
+            }
+            response.getOptionalString("avatarUrl")?.let {
+                entity.avatarUrl = it
+            }
+            response.getOptionalString("country")?.let {
+                entity.country = it
+            }
+            response.getOptionalString("unionId")?.let {
+                entity.unionId = it
+            }
+
+            return wechatUserRepository.save(entity)
+        } catch (e: InvalidParameterSpecException) {
+            throw IllegalArgumentException(e)
+        } catch (e: InvalidKeyException) {
+            throw IllegalArgumentException(e)
+        } catch (e: BadPaddingException) {
+            throw IllegalArgumentException(e)
+        } catch (e: IllegalBlockSizeException) {
+            throw IllegalArgumentException(e)
+        }
     }
 
     override fun queryUserViaMiniAuthorizationCode(

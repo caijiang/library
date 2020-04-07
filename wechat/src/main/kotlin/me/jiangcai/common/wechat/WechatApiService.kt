@@ -27,4 +27,11 @@ interface WechatApiService {
      */
     @Transactional
     fun queryUserViaMiniAuthorizationCode(authorization: WechatAccountAuthorization, code: String): WechatUser
+
+    /**
+     * 小程序提交的加密数据，如果通过校验，应该将其更新到持久层中，并且返回新的数据
+     * @param user 可能是老旧的数据
+     */
+    @Transactional
+    fun miniDecryptData(user: WechatUser, encryptedData: String, iv: String): WechatUser
 }
