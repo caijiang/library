@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 /**
  * boot 中还需要通过 EntityScan 加入需要的entity包
+ * 将提供 [WechatMockDataService]和[WechatApiService]
  * @author CJ
  */
 @Configuration
