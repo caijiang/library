@@ -1,23 +1,21 @@
 package me.jiangcai.common.wechat.entity
 
-import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 
 /**
+ * 微信支付商户
  * @author CJ
  */
 @Entity
-data class WechatAccount(
-    @Id
-    @Column(length = 30)
-    val appId: String,
+data class WechatPayAccount(
     /**
      * 支付支持关联的商户号
      */
+    @Id
     @Column(length = 30)
-    var merchantId: String? = null,
+    val merchantId: String,
     /**
      * 微信支付的API KEY
      */
@@ -27,11 +25,5 @@ data class WechatAccount(
      * 比如 http://for.bar.com
      */
     @Column(length = 100)
-    var paymentNotifyUrlPrefix: String? = null,
-    @Column(length = 100)
-    var javascriptTicket: String? = null,
-    var javascriptTimeToExpire: LocalDateTime? = null,
-    @Column(length = 200)
-    var accessToken: String? = null,
-    var accessTimeToExpire: LocalDateTime? = null
+    var paymentNotifyUrlPrefix: String? = null
 )

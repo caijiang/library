@@ -20,6 +20,12 @@ data class WechatResponse(
     }
 
     private fun errorMe(): Throwable {
+        getOptionalString("return_msg")?.let {
+            return WechatApiException(message = root.get("return_code").asText() + it, code = 0)
+        }
+        getOptionalString("err_code_des")?.let {
+            return WechatApiException(message = root.get("err_code").asText() + it, code = 0)
+        }
         return WechatApiException(message = root.get("errmsg").asText(), code = root.get("errcode").intValue())
     }
 

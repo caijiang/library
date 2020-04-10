@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 /**
  * @author CJ
  */
-interface WechatAccountRepository : JpaRepository<WechatAccount, String>
+interface WechatAccountRepository : JpaRepository<WechatAccount, String> {
+    fun findByMerchantId(merchantId: String): List<WechatAccount>
+}
