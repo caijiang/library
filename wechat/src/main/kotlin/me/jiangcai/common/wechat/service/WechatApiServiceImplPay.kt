@@ -4,6 +4,7 @@ import me.jiangcai.common.ext.help.toSimpleString
 import me.jiangcai.common.ext.mvc.clientIpAddress
 import me.jiangcai.common.ext.mvc.contextUrl
 import me.jiangcai.common.wechat.PayableOrder
+import me.jiangcai.common.wechat.WechatSpringConfig
 import me.jiangcai.common.wechat.entity.WechatPayAccount
 import me.jiangcai.common.wechat.entity.WechatPayOrder
 import me.jiangcai.common.wechat.entity.WechatUser
@@ -14,7 +15,6 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.http.client.entity.EntityBuilder
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.ContentType
-import org.springframework.core.env.Profiles
 import org.springframework.transaction.support.TransactionTemplate
 import java.math.BigDecimal
 import java.security.MessageDigest
@@ -26,6 +26,26 @@ import javax.servlet.http.HttpServletRequest
 
 // 微信支付相关
 private val wechatDateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+
+internal fun WechatApiServiceImpl.mockPayOrderSuccessImpl(order: WechatPayOrder) {
+    if (!environment.acceptsProfiles(WechatSpringConfig.payMockProfile)) {
+        log.warn("无法在非模拟环境下使用模拟支付")
+        return
+    }
+    val o = TransactionTemplate(platformTransactionManager)
+        .execute {
+            order.payWith(
+                UUID.randomUUID().toSimpleString(), LocalDateTime.now()
+            )
+            wechatPayOrderRepository.save(order)
+        }
+
+    applicationContext.publishEvent(
+        WechatPaySuccessEvent(
+            o!!, o.user.appId
+        )
+    )
+}
 
 internal fun payForMiniImpl(order: WechatPayOrder): Map<String, String> {
     val map = mapOf(
@@ -49,7 +69,7 @@ internal fun WechatApiServiceImpl.paymentNotifyImpl(
     if (data["return_code"] != "SUCCESS")
         return
     // 验签
-    if (!environment.acceptsProfiles(Profiles.of("wechat_tech_test")))
+    if (!environment.acceptsProfiles(WechatSpringConfig.techTestProfile))
         verifySignMap(account, data)
 
     // 成功支付的表示 result_code
@@ -147,8 +167,13 @@ internal fun WechatApiServiceImpl.createUnifiedOrderForMiniImpl(
         method.entity = entity
 
         val response =
-            it.execute(method, WechatPayResponseHandler(environment.acceptsProfiles(Profiles.of("wechat_tech_test"))))
-        val prepayId = response.getStringOrError("prepay_id")
+            it.execute(
+                method,
+                WechatPayResponseHandler(environment.acceptsProfiles(WechatSpringConfig.techTestProfile))
+            )
+        val prepayId =
+            if (environment.acceptsProfiles(WechatSpringConfig.payMockProfile)) UUID.randomUUID().toSimpleString()
+            else response.getStringOrError("prepay_id")
 
         wechatPayOrderRepository.save(
             WechatPayOrder(

@@ -4,6 +4,9 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.From
+import javax.persistence.criteria.Predicate
 
 /**
  * 微信支付订单
@@ -87,6 +90,21 @@ data class WechatPayOrder(
     val refundTime: LocalDateTime? = null
 
 ) {
+    companion object {
+        /**
+         * @return 成功支付的条件
+         */
+        @Suppress("unused")
+        fun toSuccessPayOrder(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
+            // 支付成功，而且没有被退款
+            return cb.and(
+                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "SUCCESS"),
+                cb.isNotNull(orderForm.get(WechatPayOrder_.payTime)),
+                cb.isNotNull(orderForm.get(WechatPayOrder_.payTransactionId))
+            )
+        }
+    }
+
     /**
      * 成功支付
      */

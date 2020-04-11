@@ -91,6 +91,10 @@ class WechatApiServiceImpl(
         return payForMiniImpl(order)
     }
 
+    override fun mockPayOrderSuccess(wechatPayOrder: WechatPayOrder) {
+        mockPayOrderSuccessImpl(wechatPayOrder)
+    }
+
     override fun paymentNotify(account: WechatPayAccount, appId: String, data: Map<String, Any?>) {
         paymentNotifyImpl(account, appId, data)
     }

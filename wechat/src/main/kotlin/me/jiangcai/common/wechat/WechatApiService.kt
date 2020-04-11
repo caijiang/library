@@ -68,4 +68,10 @@ interface WechatApiService {
      */
 //    @Transactional
     fun paymentNotify(account: WechatPayAccount, appId: String, data: Map<String, Any?>)
+
+    /**
+     * 模拟支付成功
+     * 只有在 [WechatSpringConfig.payMockProfile] 下才可以用
+     */
+    fun mockPayOrderSuccess(wechatPayOrder: WechatPayOrder)
 }
