@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
+import javax.servlet.http.HttpServletRequest
 
 /**
  * @author CJ
@@ -39,7 +40,10 @@ class Config : JpaPackageScanner {
     @Bean
     fun wechatWebUserDetailsService(): WechatWebUserDetailsService {
         return object : WechatWebUserDetailsService {
-            override fun findByWechatUser(user: WechatUser): WechatUserAware {
+            override fun findByWechatUser(
+                user: WechatUser,
+                request: HttpServletRequest?
+            ): WechatUserAware {
                 return object : WechatUserAware {
                     override fun toWechatUser(): WechatUser {
                         return user

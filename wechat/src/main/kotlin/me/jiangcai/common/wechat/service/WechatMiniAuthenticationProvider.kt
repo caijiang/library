@@ -35,7 +35,7 @@ class WechatMiniAuthenticationProvider(
             token.code
         )
 
-        val details = wechatWebUserDetailsService.findByWechatUser(wechatUser)
+        val details = wechatWebUserDetailsService.findByWechatUser(wechatUser, token.request)
 
         token.authenticatedBy(details)
 
