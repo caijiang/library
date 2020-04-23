@@ -14,7 +14,7 @@ import java.util.*
  * @author CJ
  */
 @Controller
-class ResourceController(
+open class ResourceController(
     @Autowired
     private val resourceService: ResourceService
 ) {

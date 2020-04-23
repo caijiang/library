@@ -62,7 +62,7 @@ interface ResourceService {
     fun checkTempResource(path: String, newPathPrefix: String): Resource {
         if (path.startsWith("temp/")) {
             val newPath = path.replace("temp/", newPathPrefix)
-            return moveResource(path, newPath)
+            return moveResource(newPath, path)
         }
         return getResource(path)
     }
@@ -74,7 +74,7 @@ interface ResourceService {
     fun checkTempResource(resource: Resource, newPathPrefix: String): Resource {
         if (resource.getResourcePath().startsWith("temp/")) {
             val newPath = resource.getResourcePath().replace("temp/", newPathPrefix)
-            return moveResource(resource.getResourcePath(), newPath)
+            return moveResource(newPath, resource.getResourcePath())
         }
         return resource
     }
