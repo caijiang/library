@@ -56,6 +56,30 @@ interface ResourceService {
     fun moveResource(path: String, fromPath: String): Resource
 
     /**
+     * 检查是否临时资源，是的话，就迁移到其他路径
+     */
+    @Throws(IOException::class)
+    fun checkTempResource(path: String, newPathPrefix: String): Resource {
+        if (path.startsWith("temp/")) {
+            val newPath = path.replace("temp/", newPathPrefix)
+            return moveResource(path, newPath)
+        }
+        return getResource(path)
+    }
+
+    /**
+     * 检查是否临时资源，是的话，就迁移到其他路径
+     */
+    @Throws(IOException::class)
+    fun checkTempResource(resource: Resource, newPathPrefix: String): Resource {
+        if (resource.getResourcePath().startsWith("temp/")) {
+            val newPath = resource.getResourcePath().replace("temp/", newPathPrefix)
+            return moveResource(resource.getResourcePath(), newPath)
+        }
+        return resource
+    }
+
+    /**
      * 获取指定资源的资源定位符
      *
      * @param path 资源路径（相对）,**不可以以/开头**

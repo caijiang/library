@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 /**
  * @author CJ
  */
-interface WechatPayOrderRepository : JpaRepository<WechatPayOrder, String>
+interface WechatPayOrderRepository : JpaRepository<WechatPayOrder, String> {
+    fun findByPrepayId(prepayId: String): WechatPayOrder?
+}

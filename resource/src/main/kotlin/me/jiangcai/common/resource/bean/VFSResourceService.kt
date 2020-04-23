@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory
 import org.apache.commons.vfs2.FileSystemException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.web.context.WebApplicationContext
 import java.io.File
 import java.io.IOException
@@ -40,9 +41,10 @@ class VFSResourceService : AbstractResourceService {
     private lateinit var vfsHelper: VFSHelper
 
     //    @Autowired(required = false)
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     constructor(environment: Environment, webApplicationContext: WebApplicationContext?)
             : this(
-        environment.acceptsProfiles("development"),
+        environment.acceptsProfiles(Profiles.of("development")),
         environment.getProperty("jiangcai.resource.host", "localhost"),
         environment.getProperty(
             "jiangcai.resource.http.uri",

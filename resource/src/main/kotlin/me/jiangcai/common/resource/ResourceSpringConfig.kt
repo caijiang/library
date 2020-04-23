@@ -25,8 +25,12 @@ import org.springframework.web.context.WebApplicationContext
  * * jiangcai.resource.home 资源的实际保存位置 比如 /var/rs 也支持远程服务器 sftp://user:host/home/user
  * * jiangcai.resource.host 临时访问主机名称，只在 development 环境中生效
  *
+ * ## 上传服务
+ * 同时会增加资源上传服务，默认路径 /uploadTempResource 数据字段 data; 如果启用了 Spring Security 则要求 ROLE_UPLOAD_TEMP 权限
+ *
  * @author CJ
  */
+@Suppress("SpringFacetCodeInspection")
 @Configuration
 @Import(DevelopmentConfig::class)
 @ComponentScan("me.jiangcai.common.resource.bean")
