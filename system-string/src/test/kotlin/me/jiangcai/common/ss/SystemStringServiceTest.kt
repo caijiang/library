@@ -1,34 +1,36 @@
 package me.jiangcai.common.ss
 
-import me.jiangcai.common.test.config.H2DataSourceConfig
+import me.jiangcai.common.jpa.EnableJpa
+import me.jiangcai.common.jpa.JpaPackageScanner
 import org.apache.commons.lang3.RandomStringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Offset
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.*
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import org.springframework.test.context.web.WebAppConfiguration
-import org.springframework.transaction.annotation.EnableTransactionManagement
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
-import javax.sql.DataSource
 
 /**
  * @author CJ
  */
 @ContextConfiguration(classes = [SystemStringConfig::class, SystemStringServiceTest.Config::class])
-@RunWith(SpringJUnit4ClassRunner::class)
-@WebAppConfiguration
+//@RunWith(SpringJUnit4ClassRunner::class)
+//@WebAppConfiguration
+@SpringBootTest
+@AutoConfigureMockMvc
 class SystemStringServiceTest {
 
 
     private val random = Random()
+
     @Autowired
     private lateinit var systemStringService: SystemStringService
 
@@ -191,14 +193,17 @@ class SystemStringServiceTest {
 
 
     @Configuration
-    @EnableTransactionManagement(mode = AdviceMode.PROXY)
-    @EnableAspectJAutoProxy
-    @ImportResource("classpath:/datasource_sys.xml")
-//    @EnableWebMvc
-    open class Config : H2DataSourceConfig() {
-        @Bean
-        open fun dataSource(): DataSource {
-            return memDataSource("sys")
+    @EnableJpa(
+        useH2TempDataSource = true
+//    useMysqlDatabase = "library"
+    )
+//    @EnableTransactionManagement(mode = AdviceMode.PROXY)
+//    @EnableAspectJAutoProxy
+//    @ImportResource("classpath:/datasource_sys.xml")
+    @EnableWebMvc
+    open class Config : JpaPackageScanner {
+        override fun addJpaPackage(prefix: String, set: MutableSet<String>) {
+            set.add("me.jiangcai.common.ss.entity")
         }
     }
 }

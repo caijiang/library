@@ -11,29 +11,30 @@ import javax.persistence.Id
  * @author CJ
  */
 @Entity
-class SystemString {
+class SystemString(
     @Id
     @Column(length = 50)
-    var id: String? = null
-    var value: String? = null
+    var id: String? = null,
+    var value: String? = null,
     /**
      * java 全限定名称;如果为null则不支持UI更改
      */
     @Column(length = 100)
-    var javaTypeName: String? = null
+    var javaTypeName: String? = null,
     /**
      * 是否支持运行时更改还是必须重新启动
      */
-    var runtime: Boolean = false
+    var runtime: Boolean = false,
     /**
      * 是否运行定制
      */
-    var custom: Boolean = false
+    var custom: Boolean = false,
     /**
      * 更多备注
      */
     @Column(length = 50)
     var comment: String? = null
+) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

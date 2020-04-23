@@ -7,6 +7,7 @@ import me.jiangcai.common.ss.repository.SystemStringRepository
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.util.NumberUtils
 import java.math.BigDecimal
@@ -39,12 +40,12 @@ open class SystemStringServiceImpl(
 
 
     override fun <T> getSystemString(key: String, exceptedType: Class<T>, defaultValue: T): T {
-        val ss = systemStringRepository.findOne(key) ?: return defaultValue
+        val ss = systemStringRepository.findByIdOrNull(key) ?: return defaultValue
         return if (ss.value == null) defaultValue else toValue(exceptedType, ss.value)
     }
 
     override fun <T> getSystemString(key: String, exceptedType: Class<T>): T {
-        val ss = systemStringRepository.findOne(key) ?: throw IllegalStateException()
+        val ss = systemStringRepository.findByIdOrNull(key) ?: throw IllegalStateException()
         return if (ss.value == null) throw IllegalStateException() else toValue(exceptedType, ss.value)
     }
 
@@ -55,12 +56,7 @@ open class SystemStringServiceImpl(
         exceptedType: Class<T>,
         defaultValue: T
     ): T {
-        var ss = systemStringRepository.findOne(key)
-        if (ss == null) {
-            ss = SystemString()
-            ss.id = key
-            ss = systemStringRepository.save(ss)
-        }
+        val ss = systemStringRepository.findByIdOrNull(key) ?: systemStringRepository.save(SystemString(id = key))
 
         ss.comment = comment
         ss.custom = true
@@ -108,6 +104,7 @@ open class SystemStringServiceImpl(
             return converter2Primitive(value, type)
         } else if (Number::class.java.isAssignableFrom(type)) {
             val numberType = type as Class<out Number>
+            @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
             return NumberUtils.parseNumber<Number>(value, numberType as Class<Number>?) as T
         } else
             throw IllegalArgumentException("not support type for:$type")
@@ -161,7 +158,7 @@ open class SystemStringServiceImpl(
     }
 
     private fun u(key: String, value: String?) {
-        var ss = systemStringRepository.findOne(key)
+        var ss = systemStringRepository.findByIdOrNull(key)
         if (ss == null) {
             ss = SystemString()
             ss.id = key
@@ -214,8 +211,8 @@ open class SystemStringServiceImpl(
     }
 
     override fun delete(key: String) {
-        if (systemStringRepository.findOne(key) != null) {
-            systemStringRepository.delete(key)
+        if (systemStringRepository.findByIdOrNull(key) != null) {
+            systemStringRepository.deleteById(key)
             applicationEventPublisher.publishEvent(SystemStringUpdatedEvent(key, true, null))
         }
 

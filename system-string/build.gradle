@@ -1,16 +1,35 @@
+buildscript {
+    ext.spring_framework = "5.2.4.RELEASE"
+    ext.spring_data = "2.2.5.RELEASE"
+    ext.spring_boot = "2.2.5.RELEASE"
+    ext.spring_security = "5.2.2.RELEASE"
+    ext.jackson = '2.10.2'
+}
+
 group 'me.jiangcai.common'
-version '1.0.0-SNAPSHOT'
+version '2.0.0-SNAPSHOT'
 
 dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
     compileOnly "javax:javaee-api:$javaee_version"
     api project(":thymeleaf-view")
-    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.9.4.RELEASE'
-    compile group: 'org.springframework.security', name: 'spring-security-core', version: '4.0.4.RELEASE'
+    compile group: 'org.springframework.data', name: 'spring-data-jpa', version: "$spring_data"
+    compile group: 'org.springframework.security', name: 'spring-security-core', version: "$spring_security"
 
-    testApi project(":test")
+    testCompile "javax:javaee-api:8.0"
+    testCompile project(':jpa')
+
+    testCompile group: 'org.springframework.security', name: 'spring-security-test', version: "$spring_security"
+//    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: "$spring_boot"
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "$spring_boot"
+    testCompile('org.springframework.boot:spring-boot-starter-test:' + "$spring_boot") {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
     testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
-    testRuntime group: 'org.springframework', name: 'spring-aspects', version: '4.3.8.RELEASE'
+//    testRuntime group: 'org.springframework', name: 'spring-aspects', version: "$spring_framework"
     testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
 
 }
