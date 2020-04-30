@@ -16,7 +16,7 @@ import java.util.*
 @Controller
 open class ResourceController(
     @Autowired
-    private val resourceService: ResourceService
+    open val resourceService: ResourceService
 ) {
     private fun getFileNameSuffix(originalName: String, contentType: String): String {
         return try {

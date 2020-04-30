@@ -56,7 +56,7 @@ class VFSResource(
     }
 
     override fun getFilename(): String {
-        return super.getFilename()
+        return super.getFilename()!!
     }
 
     @Throws(IOException::class)
@@ -124,4 +124,21 @@ class VFSResource(
     override fun getResourcePath(): String {
         return resourcePath
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is VFSResource) return false
+//        if (!super.equals(other)) return false
+
+        if (resourcePath != other.resourcePath) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = 0
+        result = 31 * result + resourcePath.hashCode()
+        return result
+    }
+
 }

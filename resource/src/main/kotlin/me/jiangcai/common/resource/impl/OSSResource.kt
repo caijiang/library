@@ -66,4 +66,22 @@ class OSSResource(
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is OSSResource) return false
+//        if (!super.equals(other)) return false
+
+        if (bucketName != other.bucketName) return false
+        if (path != other.path) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = 0
+        result = 31 * result + bucketName.hashCode()
+        result = 31 * result + path.hashCode()
+        return result
+    }
 }
