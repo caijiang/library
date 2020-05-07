@@ -78,7 +78,7 @@ class WechatApiServiceImpl(
     }
 
     override fun createUnifiedOrderForMini(
-        request: HttpServletRequest,
+        request: HttpServletRequest?,
         account: WechatPayAccount,
         user: WechatUser,
         order: PayableOrder,

@@ -105,14 +105,14 @@ internal fun WechatApiServiceImpl.paymentNotifyImpl(
 
 
 internal fun WechatApiServiceImpl.createUnifiedOrderForMiniImpl(
-    request: HttpServletRequest,
+    request: HttpServletRequest?,
     account: WechatPayAccount,
     user: WechatUser,
     order: PayableOrder,
     orderAmount: BigDecimal
 ): WechatPayOrder {
 
-    val url = account.paymentNotifyUrlPrefix ?: request.contextUrl()
+    val url = account.paymentNotifyUrlPrefix ?: request?.contextUrl()
     val requestId = UUID.randomUUID().toSimpleString()
     val data = mapOf(
         "appid" to user.appId,
@@ -124,7 +124,7 @@ internal fun WechatApiServiceImpl.createUnifiedOrderForMiniImpl(
         "out_trade_no" to requestId,
 //        标价币种	fee_type	否	String(16)	CNY	符合ISO 4217标准的三位字母代码，默认人民币：CNY，详
         "total_fee" to orderAmount.movePointRight(2).intValueExact(),
-        "spbill_create_ip" to request.clientIpAddress(),
+        "spbill_create_ip" to request?.clientIpAddress(),
 //        交易起始时间	time_start	否	String(14)	20091225091010	订单生成时间，格式为yyyyMMddHHmmss，如2009年12月25日9点10分10秒表示为20091225091010。其他详见时间规则
 //                交易结束时间	time_expire	否	String(14)	20091227091010
 //                订单失效时间，格式为yyyyMMddHHmmss，如2009年12月27日9点10分10秒表示为20091227091010。订单失效时间是针对订单号而言的，由于在请求支付的时候有一个必传参数prepay_id只有两小时的有效期，所以在重入时间超过2小时的时候需要重新请求下单接口获取新的prepay_id。其他详见时间规则

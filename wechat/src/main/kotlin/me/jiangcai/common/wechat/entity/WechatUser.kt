@@ -1,5 +1,6 @@
 package me.jiangcai.common.wechat.entity
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
@@ -31,5 +32,6 @@ data class WechatUser(
     @Column(length = 32)
     var unionId: String? = null,
     @Column(length = 30)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     var miniSessionKey: String? = null
 )

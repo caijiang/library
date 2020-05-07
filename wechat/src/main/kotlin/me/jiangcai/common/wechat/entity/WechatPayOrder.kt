@@ -1,5 +1,6 @@
 package me.jiangcai.common.wechat.entity
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
@@ -31,6 +32,7 @@ data class WechatPayOrder(
      * 微信支付商户
      */
     @ManyToOne
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     val account: WechatPayAccount,
     @ManyToOne
     val user: WechatUser,
@@ -95,15 +97,50 @@ data class WechatPayOrder(
          * @return 成功支付的条件
          */
         @Suppress("unused")
-        fun toSuccessPayOrder(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
-            // 支付成功，而且没有被退款
+        fun toOrdinalSuccessPay(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
+            // 支付成功
             return cb.and(
-                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "SUCCESS"),
+//                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "SUCCESS"),
                 cb.isNotNull(orderForm.get(WechatPayOrder_.payTime)),
                 cb.isNotNull(orderForm.get(WechatPayOrder_.payTransactionId))
             )
         }
+
+        /**
+         * @return 成功支付的条件
+         */
+        @Suppress("unused")
+        fun toOrdinalRefundPay(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
+            return cb.and(
+                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "REFUND"),
+                cb.isNotNull(orderForm.get(WechatPayOrder_.refundTime)),
+                cb.isNotNull(orderForm.get(WechatPayOrder_.payTransactionId))
+            )
+        }
+
+        /**
+         * @return 成功支付的条件
+         */
+        @Suppress("unused")
+        fun toSuccessPay(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
+            // 支付成功，而且没有被退款
+            return cb.and(
+                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "SUCCESS"),
+                toOrdinalSuccessPay(cb, orderForm),
+                toOrdinalRefundPay(cb, orderForm).not()
+            )
+        }
     }
+
+    @Suppress("unused")
+    fun getOrdinalSuccessPay() = payTime != null && payTransactionId != null
+
+    @Suppress("unused")
+    fun getOrdinalRefundPay() = orderStatus == "REFUND" && refundTime != null && payTransactionId != null
+
+    @Suppress("unused")
+    fun getSuccessPay() = orderStatus == "SUCCESS" && getOrdinalSuccessPay() && !getOrdinalRefundPay()
+
 
     /**
      * 成功支付
