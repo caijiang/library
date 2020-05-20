@@ -6,10 +6,10 @@ import org.springframework.core.env.Environment
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.View
-import org.thymeleaf.spring4.SpringTemplateEngine
-import org.thymeleaf.spring4.messageresolver.SpringMessageResolver
-import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver
-import org.thymeleaf.spring4.view.ThymeleafViewResolver
+import org.thymeleaf.spring5.SpringTemplateEngine
+import org.thymeleaf.spring5.messageresolver.SpringMessageResolver
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
+import org.thymeleaf.spring5.view.ThymeleafViewResolver
 import java.util.*
 import javax.annotation.PostConstruct
 

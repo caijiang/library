@@ -1,14 +1,16 @@
 package me.jiangcai.common.ext
 
-/**
- * @author CJ
- */
+import java.math.BigDecimal
+
 
 /**
- * 随机排序
+ * Returns the sum of all values produced by [selector] function applied to each element in
+ * the collection.
  */
-@Suppress("RedundantVisibilityModifier", "unused")
-public fun <T> Iterable<T>.randomSort(): List<T> {
-    return sortedWith(RandomComparator())
+inline fun <T> Iterable<T>.sumByBigDecimal(selector: (T) -> BigDecimal): BigDecimal {
+    var sum: BigDecimal = BigDecimal.ZERO
+    for (element in this) {
+        sum += selector(element)
+    }
+    return sum
 }
-

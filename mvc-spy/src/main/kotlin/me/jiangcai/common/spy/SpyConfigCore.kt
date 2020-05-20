@@ -15,7 +15,7 @@ import java.util.*
 @ComponentScan("me.jiangcai.common.spy.bean")
 @Import(ThymeleafViewConfig::class, SpyFilter::class)
 open class SpyConfigCore(
-    @Suppress("SpringJavaInjectionPointsAutowiringInspection") val uri: String
+    @Suppress("SpringJavaInjectionPointsAutowiringInspection") val uri: String = "/manage/spy"
 ) : BeanFactoryPostProcessor {
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
         val ps = beanFactory.getSingleton("systemProperties") as Properties

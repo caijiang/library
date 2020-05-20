@@ -4,7 +4,6 @@ import me.jiangcai.common.ext.annotations.AllOpenClass
 import me.jiangcai.common.spy.SpyFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.DependsOn
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -21,7 +20,7 @@ import java.security.MessageDigest
  */
 //@Component("spyController")
 @Controller
-@DependsOn("spyConfigCore")
+//@DependsOn("spyConfigCore")
 @RequestMapping("${'$'}{me.jiangcai.common.spy.uri}")
 @AllOpenClass
 class SpyController(
