@@ -167,8 +167,11 @@
                             // try via json.
                             try {
                                 let json = JSON.parse(content);
+                                console.log('json:', json)
                                 c.JSONView(json, {collapsed: true})
                             } catch (e) {
+                                console.log('error for json', e)
+                                c.text(content)
                             }
                         }
                     }
