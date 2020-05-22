@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 /**
  * boot 中还需要通过 EntityScan 加入需要的entity包
- * 将提供 [WechatMockDataService]和[WechatApiService]
+ * 将提供 [WechatMockDataService],[WechatApiService],[WechatPayApiService]
  * @author CJ
  */
 @Configuration

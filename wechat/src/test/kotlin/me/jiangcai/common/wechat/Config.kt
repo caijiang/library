@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest
  */
 @Configuration
 @EnableJpa(
+//    provider = JpaProvider.Hibernate,
     useH2TempDataSource = true
 //    useMysqlDatabase = "library"
 )

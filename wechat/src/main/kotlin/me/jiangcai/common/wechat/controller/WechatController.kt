@@ -1,6 +1,8 @@
 package me.jiangcai.common.wechat.controller
 
+import me.jiangcai.common.ext.help.runAsRoot
 import me.jiangcai.common.wechat.WechatApiService
+import me.jiangcai.common.wechat.WechatPayApiService
 import me.jiangcai.common.wechat.WechatUserAware
 import me.jiangcai.common.wechat.repository.WechatPayAccountRepository
 import me.jiangcai.common.wechat.requestWechatAccountAuthorization
@@ -23,6 +25,8 @@ import javax.servlet.http.HttpServletRequest
 @Controller
 class WechatController(
     @Autowired
+    private val wechatPayApiService: WechatPayApiService,
+    @Autowired
     private val wechatPayAccountRepository: WechatPayAccountRepository,
     @Autowired
     private val wechatApiService: WechatApiService,
@@ -41,21 +45,39 @@ class WechatController(
     @PostMapping("\${me.jiangcai.wechat.miniDecryptDataForUserInfo.uri:/wechatMiniDecryptDataForUserInfo}")
     @ResponseBody
     fun miniDecryptDataForUserInfo(
-        @AuthenticationPrincipal details: WechatUserAware,
+        @AuthenticationPrincipal details: Any,
         @RequestParam encryptedData: String, @RequestParam iv: String
     ): Any {
-        return wechatApiService.miniDecryptData(details.toWechatUser(), encryptedData, iv)
+        return wechatApiService.miniDecryptData((details as WechatUserAware).toWechatUser(), encryptedData, iv)
     }
 
     @Suppress("MVCPathVariableInspection")
     @PostMapping("\${me.jiangcai.wechat.payNotifyUri:/wechat/paymentNotify}")
     fun paymentNotify(@RequestBody data: Map<String, Any?>): ResponseEntity<String> {
         // 寻找何时的 account
-        val appId = data["appid"].toString()
-        val account = wechatPayAccountRepository.findByIdOrNull(data["mch_id"].toString())
-            ?: throw IllegalArgumentException("not merchant find")
+        runAsRoot {
+            val appId = data["appid"].toString()
+            val account = wechatPayAccountRepository.findByIdOrNull(data["mch_id"].toString())
+                ?: throw IllegalArgumentException("not merchant find")
 
-        wechatApiService.paymentNotify(account, appId, data)
+            wechatPayApiService.paymentNotify(account, appId, data)
+        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_XML)
+            .body("<xml><return_code><![CDATA[SUCCESS]]></return_code></xml>")
+    }
+
+    @Suppress("MVCPathVariableInspection")
+    @PostMapping("\${me.jiangcai.wechat.payNotifyUri:/wechat/paymentNotify}/refund")
+    fun refundNotify(@RequestBody data: Map<String, Any?>): ResponseEntity<String> {
+        // 寻找何时的 account
+        runAsRoot {
+            val appId = data["appid"].toString()
+            val account = wechatPayAccountRepository.findByIdOrNull(data["mch_id"].toString())
+                ?: throw IllegalArgumentException("not merchant find")
+
+            wechatPayApiService.refundNotify(account, appId, data)
+        }
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_XML)
             .body("<xml><return_code><![CDATA[SUCCESS]]></return_code></xml>")

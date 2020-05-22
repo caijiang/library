@@ -1,11 +1,13 @@
 package me.jiangcai.common.wechat.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import me.jiangcai.common.ext.sumByBigDecimal
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Expression
 import javax.persistence.criteria.From
 import javax.persistence.criteria.Predicate
 
@@ -55,17 +57,18 @@ data class WechatPayOrder(
     @Column(length = 64)
     var codeUrl: String? = null,
 
-    /**
-     * SUCCESS—支付成功
-     * REFUND—转入退款
-     * NOTPAY—未支付
-     * CLOSED—已关闭
-     * REVOKED—已撤销（刷卡支付）
-     * USERPAYING--用户支付中
-     * PAYERROR--支付失败(其他原因，如银行返回失败)
-     */
-    @Column(length = 15)
-    var orderStatus: String? = null,
+//    /**
+//     * SUCCESS—支付成功
+//     * REFUND—转入退款
+//     * NOTPAY—未支付
+//     * CLOSED—已关闭
+//     * REVOKED—已撤销（刷卡支付）
+//     * USERPAYING--用户支付中
+//     * PAYERROR--支付失败(其他原因，如银行返回失败)
+//     */
+//    @Column(length = 15)
+//    var orderStatus: String? = null,
+    var orderSuccess: Boolean? = null,
 
     /**
      * 支付成功的跳转地址
@@ -82,72 +85,85 @@ data class WechatPayOrder(
      */
     @Column(length = 32)
     var payTransactionId: String? = null,
-    /**
-     * 用户撤销时间
-     */
-    val revokeTime: LocalDateTime? = null,
-    /**
-     * 退款时间
-     */
-    val refundTime: LocalDateTime? = null
+    @OneToMany(mappedBy = "payOrder", orphanRemoval = true)
+    val refundOrders: List<WechatRefundOrder> = emptyList()
+//    /**
+//     * 用户撤销时间
+//     */
+//    val revokeTime: LocalDateTime? = null,
+//    /**
+//     * 退款时间
+//     */
+//    val refundTime: LocalDateTime? = null
 
 ) {
     companion object {
         /**
          * @return 成功支付的条件
          */
-        @Suppress("unused")
         fun toOrdinalSuccessPay(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
             // 支付成功
             return cb.and(
-//                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "SUCCESS"),
+                cb.isTrue(orderForm.get(WechatPayOrder_.orderSuccess)),
+//                cb.equal(orderForm.get(WechatPayOrder_.orderSuccess), true),
                 cb.isNotNull(orderForm.get(WechatPayOrder_.payTime)),
                 cb.isNotNull(orderForm.get(WechatPayOrder_.payTransactionId))
             )
         }
 
-        /**
-         * @return 成功支付的条件
-         */
-        @Suppress("unused")
-        fun toOrdinalRefundPay(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
-            return cb.and(
-                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "REFUND"),
-                cb.isNotNull(orderForm.get(WechatPayOrder_.refundTime)),
-                cb.isNotNull(orderForm.get(WechatPayOrder_.payTransactionId))
-            )
+        fun toRefundAmount(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Expression<BigDecimal> {
+            val allRefund = orderForm.join(WechatPayOrder_.refundOrders)
+            // 只取值 success
+            val value = cb.selectCase<BigDecimal>()
+                .`when`(cb.isTrue(allRefund[WechatRefundOrder_.requestSuccess]), allRefund[WechatRefundOrder_.amount])
+                .otherwise(cb.literal(BigDecimal.ZERO))
+            return cb.coalesce(cb.sum(value), cb.literal(BigDecimal.ZERO))
         }
 
-        /**
-         * @return 成功支付的条件
-         */
-        @Suppress("unused")
-        fun toSuccessPay(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Predicate {
-            // 支付成功，而且没有被退款
-            return cb.and(
-                cb.equal(orderForm.get(WechatPayOrder_.orderStatus), "SUCCESS"),
-                toOrdinalSuccessPay(cb, orderForm),
-                toOrdinalRefundPay(cb, orderForm).not()
-            )
+        fun toRefundSuccessAmount(cb: CriteriaBuilder, orderForm: From<*, WechatPayOrder>): Expression<BigDecimal> {
+            val allRefund = orderForm.join(WechatPayOrder_.refundOrders)
+            // 只取值 success
+            val value = cb.selectCase<BigDecimal>()
+                .`when`(
+                    cb.and(
+                        cb.isTrue(allRefund[WechatRefundOrder_.requestSuccess])
+                        , cb.isTrue(allRefund[WechatRefundOrder_.success])
+                    ), allRefund[WechatRefundOrder_.amount]
+                )
+                .otherwise(cb.literal(BigDecimal.ZERO))
+            return cb.coalesce(cb.sum(value), cb.literal(BigDecimal.ZERO))
         }
     }
 
-    @Suppress("unused")
-    fun getOrdinalSuccessPay() = payTime != null && payTransactionId != null
+    /**
+     * 原始订单成功支付
+     */
+    val ordinalSuccessPay: Boolean
+        get() = orderSuccess == true && payTime != null && payTransactionId != null
 
-    @Suppress("unused")
-    fun getOrdinalRefundPay() = orderStatus == "REFUND" && refundTime != null && payTransactionId != null
+    /**
+     * 已申请的退款金额
+     */
+    val refundAmount: BigDecimal
+        get() = refundOrders.filter { it.requestSuccess }.sumByBigDecimal { it.amount }
 
-    @Suppress("unused")
-    fun getSuccessPay() = orderStatus == "SUCCESS" && getOrdinalSuccessPay() && !getOrdinalRefundPay()
-
+    /**
+     * 成功退款总额
+     */
+    val refundSuccessAmount: BigDecimal
+        get() = refundOrders.filter { it.requestSuccess && it.success }.sumByBigDecimal { it.amount }
 
     /**
      * 成功支付
      */
     fun payWith(id: String, time: LocalDateTime) {
-        orderStatus = "SUCCESS"
+//        orderStatus = "SUCCESS"
+        orderSuccess = true
         payTime = time
         payTransactionId = id
+    }
+
+    fun failed() {
+        orderSuccess = false
     }
 }

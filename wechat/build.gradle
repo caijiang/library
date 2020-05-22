@@ -7,7 +7,7 @@ buildscript {
 }
 
 group 'me.jiangcai.common'
-version '1.0.0-SNAPSHOT'
+version '2.0.5-SNAPSHOT'
 
 apply plugin: 'kotlin-kapt'
 apply plugin: "org.jetbrains.kotlin.plugin.spring"
@@ -37,6 +37,7 @@ dependencies {
 //    compile group: 'org.springframework', name: 'spring-tx', version: "$spring_framework"
 
     testCompile 'org.eclipse.persistence:eclipselink:2.6.2'
+    testRuntime group: 'org.hibernate', name: 'hibernate-core', version: '5.4.12.Final'
     testRuntime group: 'com.h2database', name: 'h2', version: '1.4.197'
     testRuntime group: 'mysql', name: 'mysql-connector-java', version: '5.1.40'
     testCompile "javax:javaee-api:8.0"

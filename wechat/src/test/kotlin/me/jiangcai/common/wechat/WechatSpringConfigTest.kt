@@ -1,13 +1,17 @@
 package me.jiangcai.common.wechat
 
+import me.jiangcai.common.ext.test.isEqualMoneyTo
 import me.jiangcai.common.wechat.entity.WechatPayAccount
+import me.jiangcai.common.wechat.entity.WechatPayOrder
 import me.jiangcai.common.wechat.repository.WechatPayAccountRepository
 import me.jiangcai.common.wechat.repository.WechatPayOrderRepository
+import me.jiangcai.common.wechat.service.techMockDataInReqInRefundNotify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.test.context.support.WithUserDetails
@@ -19,7 +23,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
+import java.io.File
 import java.math.BigDecimal
+import java.time.LocalDateTime
+import javax.persistence.EntityManager
+import javax.persistence.PersistenceContext
 
 /**
  * @author CJ
@@ -27,12 +37,22 @@ import java.math.BigDecimal
 @SpringBootTest
 @ActiveProfiles("wechat_tech_test") // 技术测试
 @AutoConfigureMockMvc
-@Suppress("NonAsciiCharacters", "TestFunctionName")
+@Suppress("NonAsciiCharacters", "TestFunctionName", "UsePropertyAccessSyntax")
 @ContextConfiguration(classes = [Config::class])
 internal class WechatSpringConfigTest {
 
     @Autowired
     private var mockMvc: MockMvc? = null
+
+    @PersistenceContext
+    private lateinit var entityManager: EntityManager
+
+    @Suppress("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private lateinit var platformTransactionManager: PlatformTransactionManager
+
+    @Autowired
+    private lateinit var wechatPayApiService: WechatPayApiService
 
     @Autowired
     private lateinit var wechatApiService: WechatApiService
@@ -67,16 +87,11 @@ internal class WechatSpringConfigTest {
 
         // 模拟一个微信商户
 
-        val account = wechatPayAccountRepository.save(
-            WechatPayAccount(
-                merchantId = "1442217602",
-                payApiKey = "1442217602"
-            )
-        )
+        val account = findAccount()
 
         val wechatUser =
             wechatMockDataService.fetchWechatUser("o7R91wcYSGsqqK7UNfSqXQGMKUZs", appId = "wxcfb79dba92b5499d")
-        val order = wechatApiService.createUnifiedOrderForMini(
+        val order = wechatPayApiService.createUnifiedOrderForMini(
             request,
             account,
             wechatUser,
@@ -89,17 +104,35 @@ internal class WechatSpringConfigTest {
                     return BigDecimal.valueOf(100)
                 }
 
+                override fun getPayExpireTime(): LocalDateTime {
+                    return LocalDateTime.now().plusMinutes(30)
+                }
+
                 override fun getOrderProductName(): String = "测试"
 
                 override fun getOrderBody(): String = "内容"
 
             }
         )
+        val cb = entityManager.criteriaBuilder
+        val cq = cb.createQuery(Long::class.java)
+        val root = cq.from(WechatPayOrder::class.java)
+
+        assertThat(
+            entityManager.createQuery(
+                cq.select(cb.count(root))
+                    .where(cb.equal(root, order), WechatPayOrder.toOrdinalSuccessPay(cb, root))
+            )
+                .singleResult
+        )
+            .`as`("刚下单 肯定没支付成功")
+            .isEqualTo(0)
 
         println(order)
-        @Suppress("UsePropertyAccessSyntax")
         assertThat(order.prepayId)
             .isNotNull()
+        assertThat(order.ordinalSuccessPay)
+            .isFalse()
 
         // 然后此时给它一个……
 
@@ -135,8 +168,148 @@ internal class WechatSpringConfigTest {
             .andExpect(status().isOk)
 
         // 然后订单就已经成功了
-        assertThat(wechatPayOrderRepository.getOne(order.id).orderStatus)
-            .isEqualTo("SUCCESS")
+        assertThat(wechatPayOrderRepository.getOne(order.id).orderSuccess)
+            .isTrue()
+        assertThat(wechatPayOrderRepository.getOne(order.id).ordinalSuccessPay)
+            .isTrue()
+
+        assertThat(
+            entityManager.createQuery(
+                cq.select(cb.count(root))
+                    .where(cb.equal(root, order), WechatPayOrder.toOrdinalSuccessPay(cb, root))
+            )
+                .singleResult
+        )
+            .`as`("现在支付成功了")
+            .isEqualTo(1)
+
+        refundTest(order)
+    }
+
+    private fun findAccount(): WechatPayAccount {
+        val x = File("./src/test/resources/mock.p12")
+        val file = if (x.exists()) x else File("./wechat/src/test/resources/mock.p12")
+        // 1442217602
+        return wechatPayAccountRepository.findByIdOrNull("1498570872") ?: wechatPayAccountRepository.save(
+            WechatPayAccount(
+                p12FileName = file.absolutePath,
+                merchantId = "1498570872",
+                payApiKey = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456"
+            )
+        )
+    }
+
+    /**
+     * 本地生成证书
+     *
+     * 退款测试。
+     * 流程。
+     *
+     * 发起退款。JPA 查询。
+     * 模拟退款回调，JPA 查询
+     */
+    private fun refundTest(order: WechatPayOrder) {
+        val cb = entityManager.criteriaBuilder
+        val cq = cb.createQuery(BigDecimal::class.java)
+        val root = cq.from(WechatPayOrder::class.java)
+
+        assertThat(
+            entityManager.createQuery(
+                cq.select(WechatPayOrder.toRefundAmount(cb, root))
+                    .where(cb.equal(root, order))
+            )
+                .singleResult
+        )
+            .isEqualMoneyTo(BigDecimal.ZERO)
+
+        // 退款 50%
+        val refundMoney = "50".toBigDecimal()
+        val refundOrder = wechatPayApiService.refundPayForMini(order, refundMoney)
+
+
+        TransactionTemplate(platformTransactionManager)
+            .executeWithoutResult {
+                assertThat(
+                    entityManager.createQuery(
+                        cq.select(WechatPayOrder.toRefundAmount(cb, root))
+                            .where(cb.equal(root, order))
+                    )
+                        .singleResult
+                )
+                    .isEqualMoneyTo(refundMoney)
+                assertThat(wechatPayOrderRepository.getOne(order.id).refundAmount)
+                    .isEqualMoneyTo(refundMoney)
+
+                assertThat(
+                    entityManager.createQuery(
+                        cq.select(WechatPayOrder.toRefundSuccessAmount(cb, root))
+                            .where(cb.equal(root, order))
+                    )
+                        .singleResult
+                )
+                    .isEqualMoneyTo(BigDecimal.ZERO)
+                assertThat(wechatPayOrderRepository.getOne(order.id).refundSuccessAmount)
+                    .isEqualMoneyTo(BigDecimal.ZERO)
+            }
+
+
+        // 现在模拟退款成功了
+
+        val notifyJson = "<xml>\n" +
+                "<return_code>SUCCESS</return_code>\n" +
+                "   <appid><![CDATA[wxcfb79dba92b5499d]]></appid>\n" +
+                "   <mch_id><![CDATA[${order.account.merchantId}]]></mch_id>\n" +
+                "   <nonce_str><![CDATA[TeqClE3i0mvn3DrK]]></nonce_str>\n" +
+                "   <req_info><![CDATA[T87GAHG17TGAHG1TGHAHAHA1Y1CIOA9UGJH1GAHV871HAGAGQYQQPOOJMXNBCXBVNMNMAJAA]]></req_info>\n" +
+                "</xml>"
+        techMockDataInReqInRefundNotify = "<root>\n" +
+                "<out_refund_no><![CDATA[${refundOrder.id}]]></out_refund_no>\n" +
+                "<out_trade_no><![CDATA[${refundOrder.id}]]></out_trade_no>\n" +
+                "<refund_account><![CDATA[REFUND_SOURCE_RECHARGE_FUNDS]]></refund_account>\n" +
+                "<refund_fee><![CDATA[${refundMoney.movePointRight(2)}]]></refund_fee>\n" +
+                "<refund_id><![CDATA[${refundOrder.refundId}]]></refund_id>\n" +
+                "<refund_recv_accout><![CDATA[支付用户零钱]]></refund_recv_accout>\n" +
+                "<refund_request_source><![CDATA[API]]></refund_request_source>\n" +
+                "<refund_status><![CDATA[SUCCESS]]></refund_status>\n" +
+                "<settlement_refund_fee><![CDATA[${refundMoney.movePointRight(2)}]]></settlement_refund_fee>\n" +
+                "<settlement_total_fee><![CDATA[${refundMoney.movePointRight(2)}]]></settlement_total_fee>\n" +
+                "<success_time><![CDATA[2018-11-19 16:24:13]]></success_time>\n" +
+                "<total_fee><![CDATA[${order.amount.movePointRight(2)}]]></total_fee>\n" +
+                "<transaction_id><![CDATA[${order.payTransactionId}]]></transaction_id>\n" +
+                "</root>"
+
+        mockMvc!!.perform(
+            post("/wechat/paymentNotify/refund")
+                .contentType(MediaType.APPLICATION_XML)
+                .content(notifyJson)
+        )
+            .andExpect(status().isOk)
+
+
+        TransactionTemplate(platformTransactionManager)
+            .executeWithoutResult {
+                assertThat(
+                    entityManager.createQuery(
+                        cq.select(WechatPayOrder.toRefundAmount(cb, root))
+                            .where(cb.equal(root, order))
+                    )
+                        .singleResult
+                )
+                    .isEqualMoneyTo(refundMoney)
+                assertThat(wechatPayOrderRepository.getOne(order.id).refundAmount)
+                    .isEqualMoneyTo(refundMoney)
+
+                assertThat(
+                    entityManager.createQuery(
+                        cq.select(WechatPayOrder.toRefundSuccessAmount(cb, root))
+                            .where(cb.equal(root, order))
+                    )
+                        .singleResult
+                )
+                    .isEqualMoneyTo(refundMoney)
+                assertThat(wechatPayOrderRepository.getOne(order.id).refundSuccessAmount)
+                    .isEqualMoneyTo(refundMoney)
+            }
 
     }
 

@@ -20,6 +20,8 @@ data class WechatUser(
     val openId: String,
     @Column(length = 100)
     var nickname: String? = null,
+    @Column(length = 15)
+    var purePhoneNumber: String? = null,
     var sex: Int? = null,
     @Column(length = 100)
     var province: String? = null,

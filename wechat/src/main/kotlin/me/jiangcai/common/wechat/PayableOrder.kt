@@ -1,6 +1,7 @@
 package me.jiangcai.common.wechat
 
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 /**
  * 可被支付的订单
@@ -19,6 +20,12 @@ interface PayableOrder {
      * @return 订单总应付款金额，单位指定货币元
      */
     fun getOrderDueAmount(): BigDecimal
+
+    /**
+     * 晚于这个时间的订单，无法被支付。
+     * @return 最迟支付时间
+     */
+    fun getPayExpireTime(): LocalDateTime
 
     /**
      * @return 订单商品名称

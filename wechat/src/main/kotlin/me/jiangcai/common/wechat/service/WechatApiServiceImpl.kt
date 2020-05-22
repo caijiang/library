@@ -1,33 +1,26 @@
 package me.jiangcai.common.wechat.service
 
-import me.jiangcai.common.wechat.PayableOrder
 import me.jiangcai.common.wechat.WechatAccountAuthorization
 import me.jiangcai.common.wechat.WechatApiService
-import me.jiangcai.common.wechat.entity.*
+import me.jiangcai.common.wechat.entity.WechatAccount
+import me.jiangcai.common.wechat.entity.WechatUser
+import me.jiangcai.common.wechat.entity.WechatUserPK
+import me.jiangcai.common.wechat.event.WechatUserUpdatedEvent
 import me.jiangcai.common.wechat.repository.WechatAccountRepository
-import me.jiangcai.common.wechat.repository.WechatPayOrderRepository
 import me.jiangcai.common.wechat.repository.WechatUserRepository
 import me.jiangcai.common.wechat.util.WechatApiResponseHandler
 import me.jiangcai.common.wechat.util.WechatResponse
 import org.apache.commons.logging.LogFactory
-import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.CloseableHttpClient
-import org.apache.http.impl.client.HttpClientBuilder
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationContext
 import org.springframework.core.env.Environment
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
-import java.math.BigDecimal
 import java.security.AlgorithmParameters
 import java.security.InvalidKeyException
 import java.security.MessageDigest
-import java.security.Security
 import java.security.spec.InvalidParameterSpecException
 import java.time.LocalDateTime
 import java.util.*
@@ -36,7 +29,6 @@ import javax.crypto.Cipher
 import javax.crypto.IllegalBlockSizeException
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import javax.servlet.http.HttpServletRequest
 
 /**
  * @author CJ
@@ -46,13 +38,7 @@ class WechatApiServiceImpl(
     @Autowired
     internal val environment: Environment,
     @Autowired
-    internal val platformTransactionManager: PlatformTransactionManager,
-    @Autowired
     internal val applicationContext: ApplicationContext,
-    @Value("\${me.jiangcai.wechat.payNotifyUri:/wechat/paymentNotify}")
-    internal val payNotifyUri: String,
-    @Autowired
-    internal val wechatPayOrderRepository: WechatPayOrderRepository,
     @Autowired
     private val wechatUserRepository: WechatUserRepository,
     @Autowired
@@ -60,44 +46,6 @@ class WechatApiServiceImpl(
 ) : WechatApiService {
 
     internal val log = LogFactory.getLog(WechatApiServiceImpl::class.java)
-
-    internal fun newClient(): CloseableHttpClient {
-        return HttpClientBuilder.create()
-            .setDefaultRequestConfig(
-                RequestConfig.custom()
-                    .setSocketTimeout(15000)
-                    .setConnectionRequestTimeout(15000)
-                    .setConnectTimeout(15000)
-                    .build()
-            )
-            .build()
-    }
-
-    init {
-        Security.addProvider(BouncyCastleProvider())
-    }
-
-    override fun createUnifiedOrderForMini(
-        request: HttpServletRequest?,
-        account: WechatPayAccount,
-        user: WechatUser,
-        order: PayableOrder,
-        orderAmount: BigDecimal
-    ): WechatPayOrder {
-        return createUnifiedOrderForMiniImpl(request, account, user, order, orderAmount)
-    }
-
-    override fun payForMini(order: WechatPayOrder): Map<String, String> {
-        return payForMiniImpl(order)
-    }
-
-    override fun mockPayOrderSuccess(wechatPayOrder: WechatPayOrder) {
-        mockPayOrderSuccessImpl(wechatPayOrder)
-    }
-
-    override fun paymentNotify(account: WechatPayAccount, appId: String, data: Map<String, Any?>) {
-        paymentNotifyImpl(account, appId, data)
-    }
 
     override fun miniDecryptData(user: WechatUser, encryptedData: String, iv: String): WechatUser {
         val entity = wechatUserRepository.getOne(WechatUserPK(user.appId, user.openId))
@@ -155,8 +103,15 @@ class WechatApiServiceImpl(
             response.getOptionalString("unionId")?.let {
                 entity.unionId = it
             }
+            response.getOptionalString("purePhoneNumber")?.let {
+                entity.purePhoneNumber = it
+            }
 
-            return wechatUserRepository.save(entity)
+            val u = wechatUserRepository.save(entity)
+
+            applicationContext.publishEvent(WechatUserUpdatedEvent(u))
+
+            return u
         } catch (e: InvalidParameterSpecException) {
             throw IllegalArgumentException(e)
         } catch (e: InvalidKeyException) {
@@ -175,7 +130,7 @@ class WechatApiServiceImpl(
         if (authorization.miniAppId == null || authorization.miniAppSecret == null)
             throw IllegalStateException("非法的 WechatAccountAuthorization 缺少公众号")
 
-        return newClient().use {
+        return environment.newClient().use {
             val rs = it.execute(
                 HttpGet("https://api.weixin.qq.com/sns/jscode2session?appid=${authorization.miniAppId}&secret=${authorization.miniAppSecret}&js_code=${code}&grant_type=authorization_code"),
                 WechatApiResponseHandler()
@@ -200,7 +155,7 @@ class WechatApiServiceImpl(
     override fun queryUserViaAuthorizationCode(authorization: WechatAccountAuthorization, code: String): WechatUser {
         if (authorization.accountAppId == null || authorization.accountAppSecret == null)
             throw IllegalStateException("非法的 WechatAccountAuthorization 缺少公众号")
-        return newClient().use { client1 ->
+        return environment.newClient().use { client1 ->
             val rs = client1.execute(
                 HttpGet("https://api.weixin.qq.com/sns/oauth2/access_token?appid=${authorization.accountAppId}&secret=${authorization.accountAppSecret}&code=${code}&grant_type=authorization_code"),
                 WechatApiResponseHandler()
@@ -210,7 +165,7 @@ class WechatApiServiceImpl(
 //            "refresh_token":"REFRESH_TOKEN",
             val openid = rs.getStringOrError("openid")
 
-            newClient().use {
+            environment.newClient().use {
                 val rs2 = it.execute(
                     HttpGet("https://api.weixin.qq.com/sns/userinfo?access_token=${access}&openid=${openid}&lang=zh_CN")
                     , WechatApiResponseHandler()
@@ -282,7 +237,7 @@ class WechatApiServiceImpl(
 
         return accessWithToken(account, authorization.accountAppSecret) { token ->
             val method = HttpGet("https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${token}&type=jsapi")
-            newClient().use {
+            environment.newClient().use {
                 val root = it.execute(method, WechatApiResponseHandler())
                 val ticket = root.getStringOrError("ticket")
                 val seconds = root.getIntOrError("expires_in")
@@ -308,7 +263,7 @@ class WechatApiServiceImpl(
             return account.accessToken!!
         }
 
-        return newClient().use {
+        return environment.newClient().use {
             val method =
                 HttpGet("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${account.appId}&secret=$wechatAppSecret")
             val root = it.execute(method, WechatApiResponseHandler())
