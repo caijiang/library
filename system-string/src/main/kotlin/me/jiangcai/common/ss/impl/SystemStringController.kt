@@ -23,11 +23,10 @@ open class SystemStringController(
     private val systemStringService: SystemStringService
 ) {
 
-
     @GetMapping("\${jiangcai.ss.uri:/systemString}")
     @Transactional(readOnly = true)
     open fun index(model: Model): String {
-        model.addAttribute("uri", environment.getRequiredProperty("jiangcai.ss.uri"))
+        model.addAttribute("uri", environment.getProperty("jiangcai.ss.uri", "/systemString"))
         model.addAttribute("list", systemStringService.listCustom())
         return "thymeleaf:classpath:/me/jiangcai/common/ss"
     }
