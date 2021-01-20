@@ -13,11 +13,10 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.*
+import javax.imageio.ImageIO
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 /**
  * @author CJ
@@ -33,6 +32,32 @@ class WechatController(
     @Autowired
     private val applicationContext: ApplicationContext
 ) {
+
+    // png
+    @GetMapping("\${me.jiangcai.wechat.miniGetUnlimitedQRCode.uri:/wechat/min/unlimitedQRCode}")
+    fun miniGetUnlimitedQRCode(
+        @RequestParam requestParams: Map<String, String>,
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ) {
+        val image = wechatApiService.miniGetUnlimitedQRCode(
+            applicationContext.requestWechatAccountAuthorization(request),
+            requestParams
+        )
+        val names = ImageIO.getWriterFormatNames()
+        val type = request.getHeader("Accept")?.removePrefix("image/")?.let { t ->
+            // 做一次校验 看它是否符合图片标准
+            if (names.map { it.toUpperCase() }.contains(t.toUpperCase())) t
+            else null
+        } ?: "png"
+
+        response.setHeader("Content-Type", "image/$type")
+        response.outputStream.use {
+            ImageIO.write(image, type, it)
+            it.flush()
+        }
+//        response.sendError(200)
+    }
 
     @Suppress("MVCPathVariableInspection")
     @PostMapping("\${me.jiangcai.wechat.webSignature.uri:/webSignature}")

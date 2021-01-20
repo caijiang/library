@@ -1,5 +1,6 @@
 package me.jiangcai.common.wechat.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import me.jiangcai.common.wechat.WechatAccountAuthorization
 import me.jiangcai.common.wechat.WechatApiService
 import me.jiangcai.common.wechat.entity.WechatAccount
@@ -11,13 +12,17 @@ import me.jiangcai.common.wechat.repository.WechatUserRepository
 import me.jiangcai.common.wechat.util.WechatApiResponseHandler
 import me.jiangcai.common.wechat.util.WechatResponse
 import org.apache.commons.logging.LogFactory
+import org.apache.http.client.entity.EntityBuilder
 import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.ContentType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.core.env.Environment
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Service
+import java.awt.image.BufferedImage
 import java.security.AlgorithmParameters
 import java.security.InvalidKeyException
 import java.security.MessageDigest
@@ -29,6 +34,7 @@ import javax.crypto.Cipher
 import javax.crypto.IllegalBlockSizeException
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import javax.imageio.ImageIO
 
 /**
  * @author CJ
@@ -45,7 +51,48 @@ class WechatApiServiceImpl(
     private val wechatAccountRepository: WechatAccountRepository
 ) : WechatApiService {
 
-    internal val log = LogFactory.getLog(WechatApiServiceImpl::class.java)
+    private val log = LogFactory.getLog(WechatApiServiceImpl::class.java)
+    private val objectMapper = ObjectMapper()
+
+    @Suppress("SpellCheckingInspection")
+    override fun miniGetUnlimitedQRCode(
+        authorization: WechatAccountAuthorization,
+        requestParams: Map<String, String>
+    ): BufferedImage {
+        // 数据处理
+        val map = mutableMapOf<String, Any>()
+        requestParams.forEach { (t, u) ->
+            if (t == "auto_color" || t == "is_hyaline") {
+                map[t] = u.toBoolean()
+            } else if (t == "width") {
+                map[t] = t.toInt()
+            } else if (t == "line_color") {
+                map[t] = objectMapper.readTree(u)
+            } else
+                map[t] = u
+        }
+
+        return useMiniAccessWithToken(authorization) {
+            environment.newClient().use { client ->
+                val method = HttpPost("https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=$it")
+
+                method.entity = EntityBuilder.create()
+                    .setContentType(ContentType.APPLICATION_JSON)
+                    .setBinary(objectMapper.writeValueAsBytes(map))
+                    .build()
+
+                client.execute(method).use { response ->
+                    if (ContentType.get(response.entity).mimeType == ContentType.APPLICATION_JSON.mimeType) {
+                        val data = objectMapper.readTree(response.entity.content)
+                        throw IllegalStateException(data["errmsg"].textValue())
+                    }
+                    response.entity.content.use {
+                        ImageIO.read(it)
+                    }
+                }
+            }
+        }
+    }
 
     override fun miniDecryptData(user: WechatUser, encryptedData: String, iv: String): WechatUser {
         val entity = wechatUserRepository.getOne(WechatUserPK(user.appId, user.openId))
@@ -252,7 +299,14 @@ class WechatApiServiceImpl(
 
     private fun <T> accessWithToken(account: WechatAccount, wechatAppSecret: String, block: (String) -> T): T {
         return block.invoke(getAccessToken(account, wechatAppSecret))
+    }
 
+    private fun <T> useMiniAccessWithToken(authorization: WechatAccountAuthorization, block: (String) -> T): T {
+        val account = wechatAccountRepository.findByIdOrNull(authorization.miniAppId!!)
+            ?: WechatAccount(
+                authorization.miniAppId
+            )
+        return block.invoke(getAccessToken(account, authorization.miniAppSecret!!))
     }
 
     private fun getAccessToken(account: WechatAccount, wechatAppSecret: String): String {

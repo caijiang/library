@@ -2,6 +2,7 @@ package me.jiangcai.common.wechat
 
 import me.jiangcai.common.wechat.entity.WechatUser
 import org.springframework.transaction.annotation.Transactional
+import java.awt.image.BufferedImage
 
 /**
  * @author CJ
@@ -34,5 +35,14 @@ interface WechatApiService {
      */
     @Transactional
     fun miniDecryptData(user: WechatUser, encryptedData: String, iv: String): WechatUser
+
+    /**
+     * https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/qr-code/wxacode.getUnlimited.html
+     */
+    @Transactional
+    fun miniGetUnlimitedQRCode(
+        authorization: WechatAccountAuthorization,
+        requestParams: Map<String, String>
+    ): BufferedImage
 
 }

@@ -28,6 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.io.File
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import javax.imageio.ImageIO
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
@@ -65,6 +66,21 @@ internal class WechatSpringConfigTest {
 
     @Autowired
     private lateinit var wechatPayOrderRepository: WechatPayOrderRepository
+
+    @Test
+    fun miniGetUnlimitedQRCode() {
+        // 首先结果必须是一个图片
+        val data = mockMvc!!.perform(
+            get("/wechat/min/unlimitedQRCode")
+                .param("scene", "well")
+        )
+            .andExpect(status().isOk)
+            .andReturn().response.contentAsByteArray
+        ImageIO.read(data.inputStream())
+
+        File("./out/image.png")
+            .writeBytes(data)
+    }
 
     @Test
     fun go() {

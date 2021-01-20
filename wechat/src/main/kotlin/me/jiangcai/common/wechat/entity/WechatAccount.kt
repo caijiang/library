@@ -18,16 +18,16 @@ data class WechatAccount(
      */
     @Column(length = 30)
     var merchantId: String? = null,
-    /**
-     * 微信支付的API KEY
-     */
-    var payApiKey: String? = null,
-    /**
-     * 调用微信支付的通知地址前缀
-     * 比如 http://for.bar.com
-     */
-    @Column(length = 100)
-    var paymentNotifyUrlPrefix: String? = null,
+//    /**
+//     * 微信支付的API KEY
+//     */
+//    var payApiKey: String? = null,
+//    /**
+//     * 调用微信支付的通知地址前缀
+//     * 比如 http://for.bar.com
+//     */
+//    @Column(length = 100)
+//    var paymentNotifyUrlPrefix: String? = null,
     @Column(length = 100)
     var javascriptTicket: String? = null,
     var javascriptTimeToExpire: LocalDateTime? = null,
