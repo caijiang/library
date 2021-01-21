@@ -19,11 +19,17 @@
 给spring4-mvc提供thymeleaf视图解析的支持
 
 ## ext
+
 没有业务归属的通用工具和扩展，是技术领域的扩展。
 
 ## logging
+
 基于log4j2的可动态配置，如果环境在mvc中也可以具备一个管理页面用于动态配置。
 
 ## business-safe
-业务安全，可以确保某些方法是业务上是并发安全的。
-支持跟spring 声明式事务的合作（通过PROXY测试。）
+
+业务安全，可以确保某些方法是业务上是并发安全的。 支持跟spring 声明式事务的合作（通过PROXY测试。）
+
+# 致谢 / Thanks
+
+<a href="https://www.jetbrains.com/?from=library"><img src="http://reborn.mingshz.com/jetbrains.png" width="80" /></a>
