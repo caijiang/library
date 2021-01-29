@@ -1,15 +1,11 @@
 package me.jiangcai.common.resource.bean
 
-import me.jiangcai.common.resource.DevelopmentConfig
 import me.jiangcai.common.resource.Resource
 import me.jiangcai.common.resource.impl.LocalResource
 import me.jiangcai.common.resource.impl.VFSResource
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.vfs2.FileSystemException
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
-import org.springframework.web.context.WebApplicationContext
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -24,7 +20,7 @@ import java.nio.file.StandardCopyOption
  * @author CJ
  */
 @Suppress("SpringJavaAutowiredMembersInspection")
-class VFSResourceService : AbstractResourceService {
+class VFSResourceService(uri: String, home: String) : AbstractResourceService() {
 
     companion object {
         const val ServletContextResourcePath = "/_resources"
@@ -40,83 +36,9 @@ class VFSResourceService : AbstractResourceService {
     @Autowired
     private lateinit var vfsHelper: VFSHelper
 
-    //    @Autowired(required = false)
-    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-    constructor(environment: Environment, webApplicationContext: WebApplicationContext?)
-            : this(
-        environment.acceptsProfiles(Profiles.of("development")),
-        environment.getProperty("jiangcai.resource.host", "localhost"),
-        environment.getProperty(
-            "jiangcai.resource.http.uri",
-            environment.getProperty("me.jiangcai.lib.resource.http.uri")
-        ),
-        environment.getProperty(
-            "jiangcai.resource.home",
-            environment.getProperty("me.jiangcai.lib.resource.home")
-        ),
-        environment.getProperty("server.port", Int::class.java, 8080),
-        webApplicationContext,
-        "jiangcai.resource"
-    )
-
-    /**
-     * @param uri                   要求使用的资源http访问uri,为null表示不用
-     * @param home                  要求使用的资源位置,为null表示不用
-     * @param port                  该应用的部署port,用于将资源管理在部署目录
-     * @param webApplicationContext webApplicationContext
-     * @param prefix                系统属性的前缀,保留应用中存在多个资源管理系统的可能
-     */
-    constructor(
-        development: Boolean,
-        developmentHost: String,
-        uri: String?,
-        home: String?,
-        port: Int,
-        webApplicationContext: WebApplicationContext?,
-        prefix: String
-    ) {
-        // 应该先构建字符串,再根据值判断是否未本地系统(file)
-        val autoHome = uri.isNullOrEmpty() || home.isNullOrEmpty()
-        var newHome: String
-        var newUri: String
-        if (autoHome) {
-            val suffix =
-                if (port == 80)
-                    ""
-                else
-                    ":${port}"
-
-            if (development) {
-                log.warn("ResourceService working in Development mode.")
-                newUri = "http://${developmentHost}$suffix$ServletContextResourcePath"
-                newHome = DevelopmentConfig.getResourcesHome()
-            } else {
-                if (webApplicationContext == null)
-                    throw IllegalStateException("ResourceService required web Environment.")
-                newUri = try {
-                    "http://" + webApplicationContext.servletContext.virtualServerName + suffix + ServletContextResourcePath
-                } catch (ignored: Throwable) {
-                    log.warn("ResourceService can not use getVirtualServerName in Servlet Version < 3.1. ")
-                    "http://localhost$suffix$ServletContextResourcePath"
-                }
-
-                newHome = webApplicationContext.servletContext.getRealPath(ServletContextResourcePath)
-                log.warn(
-                    "ResourceService running in ServletContextPath, please setup " + prefix + ".http.uri" + ","
-                            + prefix + ".home to define VFS ResourceService"
-                )
-
-            }
-
-        } else {
-            newHome = home!!
-            newUri = uri!!
-        }
-
-        if (!newHome.endsWith("/"))
-            newHome = "$newHome/"
-
-        // 研究home
+    init {
+        val newHome = if (!home.endsWith("/")) "$home/" else home
+        val newUri = if (!uri.endsWith("/")) "$uri/" else uri
         try {
             val homeUri = URI(newHome)
             if ("file" == homeUri.scheme || homeUri.scheme == null) {
@@ -129,27 +51,20 @@ class VFSResourceService : AbstractResourceService {
                 fileHome = homeUri
             }
         } catch (e: URISyntaxException) {
-            if (autoHome) {
-                localFileMode = true
-                fileHome = null
-                fileFile = File(newHome)
-            } else
-                throw IllegalArgumentException(e)
+//            if (autoHome) {
+//                localFileMode = true
+//                fileHome = null
+//                fileFile = File(newHome)
+//            } else
+            throw IllegalArgumentException(e)
         }
-
-        if (!newUri.endsWith("/"))
-            newUri = "$newUri/"
-
-
         log.info("ResourceService running on $newHome, via:$newUri")
-
         try {
             uriPrefix = URI(newUri)
 
         } catch (e: URISyntaxException) {
             throw IllegalArgumentException(e)
         }
-
     }
 
     @Throws(IOException::class)
