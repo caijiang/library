@@ -3,6 +3,7 @@ package me.jiangcai.common.resource
 import me.jiangcai.common.resource.bean.LocalResourceService
 import me.jiangcai.common.resource.bean.OSSResourceService
 import me.jiangcai.common.resource.bean.VFSResourceService
+import me.jiangcai.common.resource.bean.VFSResourceService.Companion.ServletContextResourcePath
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.web.context.WebApplicationContext
+import java.io.File
 
 /**
  * 可以载入资源管理服务的Spring配置
@@ -30,6 +32,7 @@ import org.springframework.web.context.WebApplicationContext
  *
  * ## 上传服务
  * 同时会增加资源上传服务，默认路径 /uploadTempResource 数据字段 data; 如果启用了 Spring Security 则要求 ROLE_UPLOAD_TEMP 权限
+ * 可配置 jiangcai.resource.upload.temp.uri 进行替换。
  *
  * @author CJ
  */
@@ -69,7 +72,7 @@ open class ResourceSpringConfig(
         ) as String?
 
         if (uri != null && home != null)
-            return VFSResourceService(uri, home)
+            return VFSResourceService(guessUri(uri), if (home.isNullOrBlank()) File(".").absolutePath else home)
 
         // 开发环境
         if (environment.acceptsProfiles(Profiles.of("development"))) {
@@ -84,6 +87,27 @@ open class ResourceSpringConfig(
 
         throw IllegalArgumentException("ResourceService can not work without jiangcai.resource.http.uri,jiangcai.resource.home envs. (production mode)")
 //        return VFSResourceService(environment, webApplicationContext)
+    }
+
+    private fun guessUri(uri: String?): String {
+        if (!uri.isNullOrBlank())
+            return uri
+        if (webApplicationContext == null)
+            return "http://localhost:8080$ServletContextResourcePath"
+
+        val port = environment.getProperty("server.port", Int::class.java, 8080)
+        val suffix =
+            if (port == 80)
+                ""
+            else
+                ":${port}"
+        return try {
+            "http://" + webApplicationContext!!.servletContext.virtualServerName + suffix + ServletContextResourcePath
+        } catch (ignored: Throwable) {
+            log.warn("ResourceService can not use getVirtualServerName in Servlet Version < 3.1. ")
+            "http://localhost$suffix$ServletContextResourcePath"
+        }
+//        newHome = webApplicationContext.servletContext.getRealPath(ServletContextResourcePath)
     }
 
 }

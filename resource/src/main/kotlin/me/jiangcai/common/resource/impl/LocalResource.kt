@@ -15,4 +15,22 @@ class LocalResource(
     }
 
     override fun getResourcePath(): String = resourcePath
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is LocalResource) return false
+//        if (!super.equals(other)) return false
+
+        if (resourcePath != other.resourcePath) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + resourcePath.hashCode()
+        return result
+    }
+
+
 }

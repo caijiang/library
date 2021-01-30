@@ -2,6 +2,7 @@ package me.jiangcai.common.resource
 
 import java.io.IOException
 import java.io.InputStream
+import java.util.*
 
 /**
  * 静态资源服务
@@ -77,6 +78,25 @@ interface ResourceService {
             return moveResource(newPath, resource.getResourcePath())
         }
         return resource
+    }
+
+    /**
+     * 上传本地资源到随机目录
+     */
+    fun uploadResourceToRandomPath(
+        prefix: String,
+        resource: org.springframework.core.io.Resource
+    ): Resource? {
+        if (!resource.exists())
+            return null
+
+        val name = resource.filename ?: return null
+
+        val fName = name.substring(name.lastIndexOf('.'))
+
+        val path = prefix + UUID.randomUUID().toString() + fName
+
+        return uploadResource(path, resource.inputStream)
     }
 
     /**
