@@ -13,12 +13,12 @@ import java.io.InputStream
  */
 class OSSResourceService(environment: Environment) : AbstractResourceService() {
 
-    private val urlPrefix: String = if (environment.getProperty("com.aliyun.oss.urlPrefix").endsWith("/"))
-        environment.getProperty("com.aliyun.oss.urlPrefix")
+    private val urlPrefix: String = if (environment.getProperty("com.aliyun.oss.urlPrefix")!!.endsWith("/"))
+        environment.getProperty("com.aliyun.oss.urlPrefix")!!
     else {
-        environment.getProperty("com.aliyun.oss.urlPrefix") + "/"
+        environment.getProperty("com.aliyun.oss.urlPrefix")!! + "/"
     }
-    private val bucketName: String = environment.getProperty("com.aliyun.oss.bucketName")
+    private val bucketName: String = environment.getProperty("com.aliyun.oss.bucketName")!!
     private val client: OSS = OSSClientBuilder()
         .build(
             environment.getProperty("com.aliyun.oss.endpoint"),
