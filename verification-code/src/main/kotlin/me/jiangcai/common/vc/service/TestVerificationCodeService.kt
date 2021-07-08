@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 /**
  * @author CJ
  */
-@Profile("staging | development | test")
+@Profile("(staging | development | test) & !vcSendTest")
 @Service
 class TestVerificationCodeService : AbstractVerificationCodeService() {
 

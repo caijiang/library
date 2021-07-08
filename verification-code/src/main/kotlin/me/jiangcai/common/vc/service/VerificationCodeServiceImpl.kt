@@ -16,7 +16,7 @@ import java.util.*
 /**
  * @author CJ
  */
-@Profile("!staging & !development &!test")
+@Profile("(!staging & !development &!test) | vcSendTest")
 @Service
 class VerificationCodeServiceImpl(
     @Suppress("SpringJavaInjectionPointsAutowiringInspection") @Autowired

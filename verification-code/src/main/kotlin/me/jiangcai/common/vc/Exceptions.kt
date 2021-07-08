@@ -18,4 +18,5 @@ class FrequentlySendException : IllegalStateException {
  *
  * @author CJ
  */
-class IllegalVerificationCodeException(private val type: VerificationType) : RuntimeException()
+class IllegalVerificationCodeException(@Suppress("unused") private val type: VerificationType) :
+    RuntimeException("无效的验证码")
