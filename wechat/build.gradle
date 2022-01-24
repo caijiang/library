@@ -7,7 +7,7 @@ buildscript {
 }
 
 group 'me.jiangcai.common'
-version '2.0.5-SNAPSHOT'
+version '2.0.5-without-mini'
 
 apply plugin: 'kotlin-kapt'
 apply plugin: "org.jetbrains.kotlin.plugin.spring"
